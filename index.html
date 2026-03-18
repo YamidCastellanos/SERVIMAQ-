@@ -1183,13 +1183,23 @@ function showPage(name) {
 // MODAL
 
 function openModal(id) {
-  if (id === 'modal-ot') { setTimeout(applyOTFieldLocks, 50); }
+  if (id === 'modal-ot') {
+    var editField = document.getElementById('ot-edit-id');
+    // Only lock if actually editing (editField has a value set by editOT)
+    // If opened fresh, clear any residual id first
+    if (editField && !editField.dataset.editing) editField.value = '';
+    setTimeout(applyOTFieldLocks, 50);
+  }
   document.getElementById(id).classList.add('open');
   if (id === 'modal-ot' || id === 'modal-equipo' || id === 'modal-cita') populateClienteSelects();
   if (id === 'modal-ot') populateTecnicoSelects();
   
 }
 function closeModal(id) {
+  if (id === 'modal-ot') {
+    var ef = document.getElementById('ot-edit-id');
+    if (ef) { ef.value = ''; ef.dataset.editing = ''; }
+  }
   document.getElementById(id).classList.remove('open');
   clearForm(id);
 }
@@ -1424,7 +1434,14 @@ function saveOT() {
   toast('✅ OT guardada');
   var _otId = document.getElementById('ot-edit-id').value || (DB.ots[0] ? DB.ots[0].id : null);
   var _savedOT2 = _otId ? DB.ots.find(function(x){ return x.id === _otId; }) : null;
-  if (_savedOT2) cloudPushOT(_savedOT2);
+  if (_savedOT2) {
+    // Ensure cliente and equipo exist in Supabase first
+    var _otCli = DB.clientes.find(function(x){ return x.id === _savedOT2.clienteId; });
+    var _otEq  = DB.equipos.find(function(x){ return x.id === _savedOT2.equipoId; });
+    if (_otCli) cloudPushCliente(_otCli);
+    if (_otEq)  cloudPushEquipo(_otEq);
+    setTimeout(function(){ cloudPushOT(_savedOT2); }, 1500);
+  }
 }
 function getOTForm() {
   return {
@@ -1505,6 +1522,7 @@ function editOT(id) {
   document.getElementById('ot-rep-cost').value    = ot.repCost || '';
   document.getElementById('ot-estado').value      = ot.estado;
   document.getElementById('ot-obs').value         = ot.obs || '';
+  var _ef = document.getElementById('ot-edit-id'); if(_ef) _ef.dataset.editing = 'true';
   openModal('modal-ot');
 }
 function deleteOT(id) {
@@ -1977,7 +1995,13 @@ function saveCita() {
   renderCalendario();
   toast('✅ Cita guardada');
   var _savedCita = DB.citas.find(function(x){ return x.id === (editId || DB.citas[DB.citas.length-1].id); });
-  if (_savedCita) cloudPushCita(_savedCita);
+  if (_savedCita) {
+    var _citaCli = DB.clientes.find(function(x){ return x.id === _savedCita.clienteId; });
+    var _citaEq  = DB.equipos.find(function(x){ return x.id === _savedCita.equipoId; });
+    if (_citaCli) cloudPushCliente(_citaCli);
+    if (_citaEq)  cloudPushEquipo(_citaEq);
+    setTimeout(function(){ cloudPushCita(_savedCita); }, 1500);
+  }
 }
 
 function getCitaForm() {
@@ -3071,6 +3095,7 @@ function renderUsuarioAdmin(el) {
   html += '<div class="usr-section" style="border:1px solid #fecaca">';
   html += '<div class="usr-section-title" style="color:#e74c3c">⚠️ Zona de Administración</div>';
   html += '<button class="btn" style="width:100%;background:#e74c3c;color:white;margin-bottom:8px" onclick="syncAll()">☁️ Sincronizar con Supabase</button>';
+  html += '<button class="btn" style="width:100%;background:#8e44ad;color:white;margin-bottom:8px" onclick="pushAllToCloud()">⬆️ Subir todo a la nube</button>';
   html += '<button class="btn btn-ghost" style="width:100%" onclick="cerrarSesion()">🚪 Cerrar sesión</button>';
   html += '</div>';
 
@@ -3253,6 +3278,37 @@ function checkCreateCita() {
     return;
   }
   openModal('modal-cita');
+}
+
+
+// ── Push all local data to Supabase (first time sync) ──
+async function pushAllToCloud() {
+  if (!cloudEnabled) return;
+  setSyncStatus('syncing');
+  toast('☁️ Subiendo todos los datos a la nube...');
+  try {
+    // Order matters: clientes first, then equipos, then ots/citas
+    for (var i=0; i<DB.clientes.length; i++) {
+      await supaFetch('clientes', clienteToSupa(DB.clientes[i]), 'upsert');
+    }
+    for (var i=0; i<DB.equipos.length; i++) {
+      await supaFetch('equipos', equipoToSupa(DB.equipos[i]), 'upsert');
+    }
+    for (var i=0; i<DB.tecnicos.length; i++) {
+      await supaFetch('tecnicos', tecnicoToSupa(DB.tecnicos[i]), 'upsert');
+    }
+    for (var i=0; i<DB.ots.length; i++) {
+      await supaFetch('ots', otToSupa(DB.ots[i]), 'upsert');
+    }
+    for (var i=0; i<DB.citas.length; i++) {
+      await supaFetch('citas', citaToSupa(DB.citas[i]), 'upsert');
+    }
+    setSyncStatus('ok');
+    toast('✅ Todos los datos subidos a la nube');
+  } catch(e) {
+    setSyncStatus('error');
+    toast('Error al subir datos', 'error');
+  }
 }
 
 function exportarDatos() {
