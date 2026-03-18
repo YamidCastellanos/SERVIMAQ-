@@ -1,0 +1,3493 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="theme-color" content="#1a2b4a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SERVIMAQ">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SERVIMAQ B&S Diesel — Gestión de Maquinaria</title>
+<style>
+:root {
+  --ink: #0f1923;
+  --steel: #1e2d3d;
+  --iron: #2c3e50;
+  --amber: #f39c12;
+  --amber-dark: #d68910;
+  --rust: #e74c3c;
+  --go: #27ae60;
+  --sky: #3498db;
+  --mist: #ecf0f1;
+  --fog: #f8f9fa;
+  --border: #dde3ea;
+  --text: #2c3e50;
+  --muted: #7f8c8d;
+  --white: #ffffff;
+  --shadow: 0 4px 20px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,0.15);
+  --r: 10px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  background: #f0f2f5;
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ── TOP BAR ── */
+.topbar {
+  background: var(--ink);
+  color: white;
+  padding: 0 16px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.topbar-logo {
+  width: 30px; height: 30px;
+  background: var(--amber);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.topbar-title {
+  font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.topbar-title span { color: var(--amber); }
+.topbar-date {
+  font-size: 11px;
+  color: #8899aa;
+  white-space: nowrap;
+}
+
+/* ── LAYOUT ── */
+.app { display: flex; height: calc(100vh - 60px); }
+
+.sidebar {
+  width: 220px;
+  background: var(--steel);
+  padding: 20px 0;
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+.nav-section {
+  padding: 8px 16px 4px;
+  font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #5a6f82;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 20px;
+  cursor: pointer;
+  color: #aabbc8;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.15s;
+  border-left: 3px solid transparent;
+}
+.nav-item:hover { background: rgba(255,255,255,0.06); color: white; }
+.nav-item.active { background: rgba(243,156,18,0.12); color: var(--amber); border-left-color: var(--amber); }
+.nav-item .icon { font-size: 17px; width: 22px; text-align: center; }
+
+.main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px;
+}
+
+/* ── PAGES ── */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── PAGE HEADER ── */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+.page-title {
+  font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--ink);
+}
+.page-title span { color: var(--amber); }
+
+/* ── CARDS ── */
+.card {
+  background: white;
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.card-title {
+  font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--iron);
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--mist);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── STATS ROW ── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: white;
+  border-radius: var(--r);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--amber);
+  position: relative;
+  overflow: hidden;
+}
+.stat-card.blue { border-left-color: var(--sky); }
+.stat-card.green { border-left-color: var(--go); }
+.stat-card.red { border-left-color: var(--rust); }
+.stat-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 6px; }
+.stat-value { font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-size: 38px; font-weight: 800; line-height: 1; color: var(--ink); }
+.stat-icon { position: absolute; right: 16px; top: 16px; font-size: 28px; opacity: 0.15; }
+
+/* ── FORM ── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+.form-grid.full { grid-template-columns: 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group.span2 { grid-column: span 2; }
+.form-group.span3 { grid-column: span 3; }
+label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); }
+input, select, textarea {
+  padding: 10px 13px;
+  border: 1.5px solid var(--border);
+  border-radius: 7px;
+  font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--fog);
+  transition: border-color 0.2s, background 0.2s;
+  width: 100%;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--amber);
+  background: white;
+}
+textarea { resize: vertical; min-height: 80px; }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+.btn-primary { background: var(--amber); color: white; }
+.btn-primary:hover { background: var(--amber-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(243,156,18,0.4); }
+.btn-dark { background: var(--ink); color: white; }
+.btn-dark:hover { background: var(--steel); }
+.btn-ghost { background: transparent; color: var(--muted); border: 1.5px solid var(--border); }
+.btn-ghost:hover { background: var(--fog); color: var(--text); }
+.btn-success { background: var(--go); color: white; }
+.btn-success:hover { background: #219a52; }
+.btn-danger { background: var(--rust); color: white; }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-lg { padding: 13px 28px; font-size: 15px; }
+.btn-row { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+
+/* ── TABLE ── */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+thead th {
+  background: var(--ink);
+  color: white;
+  padding: 11px 14px;
+  text-align: left;
+  font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+tbody tr:hover { background: #f5f7fa; }
+tbody td { padding: 10px 14px; vertical-align: middle; }
+.table-empty { text-align: center; padding: 40px; color: var(--muted); font-size: 14px; }
+
+/* ── BADGE ── */
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.badge-pending { background: #fff3cd; color: #856404; }
+.badge-progress { background: #d1ecf1; color: #0c5460; }
+.badge-done { background: #d4edda; color: #155724; }
+.badge-delivered { background: #e2e3e5; color: #383d41; }
+
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(3px);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: white;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: modalIn 0.2s ease;
+}
+@keyframes modalIn { from { transform: scale(0.95) translateY(10px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+.modal-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0;
+  background: white;
+  z-index: 1;
+}
+.modal-title {
+  font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.modal-close { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--muted); padding: 2px 6px; border-radius: 4px; }
+.modal-close:hover { background: var(--mist); color: var(--text); }
+.modal-body { padding: 24px; }
+.modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; }
+
+/* ── DOCUMENT PREVIEW ── */
+.doc-preview {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 32px;
+  font-size: 13px;
+  line-height: 1.6;
+  max-width: 700px;
+  margin: 0 auto;
+}
+.doc-header-bar {
+  background: var(--ink);
+  color: white;
+  padding: 16px 20px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.doc-company { font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-size: 20px; font-weight: 800; letter-spacing: 1px; }
+.doc-doc-type { background: var(--amber); color: white; padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+.doc-section { margin-bottom: 16px; }
+.doc-section-title { font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px; border-bottom: 1px solid var(--mist); padding-bottom: 4px; }
+.doc-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dotted #eee; }
+.doc-row:last-child { border-bottom: none; }
+.doc-key { color: var(--muted); font-weight: 500; }
+.doc-val { font-weight: 600; color: var(--ink); text-align: right; max-width: 60%; }
+.doc-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 12px; }
+.doc-table th { background: var(--mist); padding: 7px 10px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.doc-table td { padding: 7px 10px; border-bottom: 1px solid var(--mist); }
+.doc-signature-row { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 28px; }
+.doc-signature { border-top: 1.5px solid var(--text); padding-top: 8px; text-align: center; font-size: 12px; color: var(--muted); }
+.doc-total-row { background: var(--ink); color: white; font-weight: 700; }
+.doc-total-row td { padding: 9px 10px; }
+
+/* ── SHARE PANEL ── */
+.share-panel {
+  background: var(--fog);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 16px;
+}
+.share-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 10px; }
+.share-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn-whatsapp { background: #25D366; color: white; }
+.btn-whatsapp:hover { background: #128C7E; }
+.btn-copy { background: var(--sky); color: white; }
+.btn-copy:hover { background: #2980b9; }
+.btn-print { background: var(--iron); color: white; }
+.btn-print:hover { background: var(--ink); }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  background: var(--ink);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  z-index: 9999;
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { border-left: 4px solid var(--go); }
+.toast.error { border-left: 4px solid var(--rust); }
+
+/* ── SEARCH BAR ── */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.search-input { max-width: 300px; }
+
+/* ── ACTION ICONS ── */
+.action-btns { display: flex; gap: 6px; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .sidebar { width: 60px; }
+  .nav-item span:not(.icon) { display: none; }
+  .nav-section { display: none; }
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+  .form-grid.three { grid-template-columns: 1fr; }
+  .form-group.span2, .form-group.span3 { grid-column: span 1; }
+}
+
+@media print {
+  .topbar, .sidebar, .page-header, .share-panel, .btn-row, .modal-footer { display: none !important; }
+  .main { padding: 0; overflow: visible; }
+  .doc-preview { border: none; padding: 16px; }
+}
+
+.rep-tab{padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);background:white;font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);transition:all 0.2s}
+.rep-tab.active{background:var(--ink);color:white;border-color:var(--ink)}
+.rep-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-bottom:20px}
+.rep-stat{background:white;border-radius:10px;box-shadow:var(--shadow);padding:14px;border-left:4px solid var(--amber);text-align:center}
+.rep-stat-val{font-size:26px;font-weight:800;line-height:1}
+.rep-stat-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-top:4px}
+.rep-stat-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.rep-section{font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--ink);margin:20px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--amber)}
+.bar-wrap{background:var(--mist);border-radius:4px;height:8px;flex:1}
+.bar-fill{height:100%;border-radius:4px;transition:width 0.5s}
+.tec-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.tec-row:last-child{border-bottom:none}
+
+/* ── LOGIN SCREEN ── */
+#screen-login{display:none;position:fixed;inset:0;background:linear-gradient(135deg,#1a2b4a 0%,#1e2d3d 100%);
+  z-index:9999;align-items:center;justify-content:center;padding:20px}
+#screen-login.active{display:flex}
+.login-box{background:white;border-radius:16px;padding:32px;width:100%;max-width:380px;
+  box-shadow:0 24px 60px rgba(0,0,0,0.4)}
+.login-logo{text-align:center;margin-bottom:24px}
+.login-logo-icon{width:60px;height:60px;background:var(--amber);border-radius:14px;
+  display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 10px}
+.login-title{font-size:22px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--ink)}
+.login-sub{font-size:12px;color:var(--muted);margin-top:3px}
+.user-list{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;display:none}
+.user-chip{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;
+  cursor:pointer;border:2px solid var(--border);background:white;transition:all 0.2s}
+.user-chip:hover{border-color:var(--amber);background:#fef9f0}
+.user-chip.selected{border-color:var(--amber);background:#fef3e2}
+.user-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:13px;font-weight:800;color:white;flex-shrink:0}
+.user-info{flex:1;text-align:left}
+.user-name{font-size:13px;font-weight:700;color:var(--ink)}
+.user-role-badge{font-size:10px;color:var(--muted)}
+.pin-section{display:none}
+.pin-section.active{display:block}
+.pin-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;
+  color:var(--muted);margin-bottom:8px;text-align:center}
+.pin-dots{display:flex;gap:10px;justify-content:center;margin-bottom:16px}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);
+  transition:all 0.15s;background:white}
+.pin-dot.filled{background:var(--amber);border-color:var(--amber)}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pin-btn{padding:14px;border:1.5px solid var(--border);border-radius:10px;background:white;
+  font-size:18px;font-weight:700;cursor:pointer;transition:all 0.15s;color:var(--ink)}
+.pin-btn:hover{background:var(--amber);color:white;border-color:var(--amber)}
+.pin-btn.del{font-size:14px;color:var(--muted)}
+.pin-error{color:#e74c3c;font-size:12px;text-align:center;margin-top:8px;min-height:18px}
+.btn-back-login{background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;
+  margin-top:10px;display:block;width:100%;text-align:center}
+
+/* ── TOPBAR USER PILL ── */
+.topbar-user{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.1);
+  padding:5px 12px;border-radius:20px;cursor:pointer;transition:background 0.2s}
+.topbar-user:hover{background:rgba(255,255,255,0.18)}
+.topbar-avatar{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:11px;font-weight:800;color:white}
+.topbar-uname{font-size:12px;font-weight:600;color:white}
+.topbar-role{font-size:10px;color:var(--amber)}
+
+/* ── PERMISOS MODAL ── */
+.perm-section{margin-bottom:14px}
+.perm-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;
+  color:var(--muted);margin-bottom:8px}
+.perm-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;
+  border-bottom:1px solid var(--border)}
+.perm-row:last-child{border-bottom:none}
+.perm-label{font-size:13px;color:var(--ink)}
+.toggle{position:relative;width:40px;height:22px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:#ccc;border-radius:11px;cursor:pointer;
+  transition:0.3s}
+.toggle-slider:before{content:'';position:absolute;width:16px;height:16px;left:3px;bottom:3px;
+  background:white;border-radius:50%;transition:0.3s}
+.toggle input:checked + .toggle-slider{background:var(--amber)}
+.toggle input:checked + .toggle-slider:before{transform:translateX(18px)}
+
+/* ── NIVEL BADGE ── */
+.nivel-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px}
+.nivel-jefe{background:#fef3e2;color:#b7770d}
+.nivel-senior{background:#d1ecf1;color:#0c5460}
+.nivel-junior{background:#f3e5f5;color:#6a1b9a}
+
+.usr-section{background:white;border-radius:10px;box-shadow:var(--shadow);padding:20px;margin-bottom:16px}
+.usr-section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;
+  color:var(--muted);margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid var(--mist)}
+.usr-field{display:flex;align-items:center;justify-content:space-between;padding:10px 0;
+  border-bottom:1px solid var(--border)}
+.usr-field:last-child{border-bottom:none}
+.usr-field-label{font-size:13px;color:var(--muted);min-width:120px}
+.usr-field-value{font-size:13px;font-weight:600;color:var(--ink);flex:1;text-align:right}
+.usr-avatar-big{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:26px;font-weight:800;color:white;margin:0 auto 12px}
+.lock-overlay{position:relative}
+.lock-overlay::after{content:'🔒';position:absolute;top:4px;right:8px;font-size:14px;pointer-events:none}
+input[disabled],select[disabled],textarea[disabled]{background:#f5f5f5!important;color:#aaa!important;cursor:not-allowed!important}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-logo">🔧</div>
+    <div class="topbar-title">SERVIMAQ <span>B&S Diesel</span></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="topbar-date" id="topbarDate"></div>
+    <div id="sync-indicator" style="font-size:11px;font-weight:600;color:#9ca3af;cursor:pointer" onclick="syncAll()" title="Toca para sincronizar">&#9679; Local</div>
+    <button class="btn" style="background:var(--amber);color:white;padding:7px 13px;font-size:12px;font-weight:700" onclick="exportarDatos()" title="Guardar copia de seguridad">💾 Exportar</button>
+    <label class="btn" style="background:#2c3e50;color:white;padding:7px 13px;font-size:12px;font-weight:700;cursor:pointer;margin:0" title="Restaurar datos">📂 Importar<input type="file" accept=".json" onchange="importarDatos(event)" style="display:none"></label>
+  </div>
+</div>
+
+<div class="app">
+
+
+<!-- ══════════ LOGIN SCREEN ══════════ -->
+<div id="screen-login">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-icon">🔧</div>
+      <div class="login-title">SERVIMAQ</div>
+      <div class="login-sub">B&amp;S Diesel — Selecciona tu usuario</div>
+      <button id="btn-install-pwa" onclick="installPWA()" style="display:none;margin:8px auto 0;
+        background:var(--amber);color:white;border:none;border-radius:8px;padding:7px 14px;
+        font-size:11px;font-weight:700;cursor:pointer;align-items:center;gap:6px">
+        📲 Instalar en pantalla de inicio
+      </button>
+    </div>
+    <!-- Step 1: user selector -->
+    <div id="login-step1">
+      <div style="margin-bottom:6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted)">Selecciona usuario</div>
+      <select id="login-user-select" onchange="onLoginUserSelect(this.value)"
+        style="width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:10px;
+        font-size:14px;font-weight:600;background:white;color:var(--ink);cursor:pointer;margin-bottom:12px">
+        <option value="">— Elige tu usuario —</option>
+      </select>
+      <div id="login-sync-bar" style="display:none;background:#f0fdf4;border:1px solid #bbf7d0;
+        border-radius:8px;padding:8px 12px;font-size:12px;color:#166534;text-align:center;margin-bottom:8px">
+        🔄 Actualizando datos...
+      </div>
+    </div>
+    <!-- Step 2: PIN -->
+    <div id="login-step2" class="pin-section">
+      <div class="pin-label" id="pin-label-name">Ingresa tu PIN</div>
+      <div class="pin-dots" id="pin-dots">
+        <div class="pin-dot" id="pd0"></div>
+        <div class="pin-dot" id="pd1"></div>
+        <div class="pin-dot" id="pd2"></div>
+        <div class="pin-dot" id="pd3"></div>
+      </div>
+      <div class="pin-pad">
+        <button class="pin-btn" onclick="pinPress('1')">1</button>
+        <button class="pin-btn" onclick="pinPress('2')">2</button>
+        <button class="pin-btn" onclick="pinPress('3')">3</button>
+        <button class="pin-btn" onclick="pinPress('4')">4</button>
+        <button class="pin-btn" onclick="pinPress('5')">5</button>
+        <button class="pin-btn" onclick="pinPress('6')">6</button>
+        <button class="pin-btn" onclick="pinPress('7')">7</button>
+        <button class="pin-btn" onclick="pinPress('8')">8</button>
+        <button class="pin-btn" onclick="pinPress('9')">9</button>
+        <button class="pin-btn" onclick="pinPress('0')" style="grid-column:2">0</button>
+        <button class="pin-btn del" onclick="pinDel()">⌫</button>
+      </div>
+      <div class="pin-error" id="pin-error"></div>
+      <button class="btn-back-login" onclick="loginBack()">← Cambiar usuario</button>
+      <button class="btn-back-login" onclick="openRecovery()" style="color:var(--amber);margin-top:4px">¿Olvidaste tu PIN?</button>
+    </div>
+  </div>
+</div>
+
+<nav class="sidebar">
+  <div style="height:8px"></div>
+  <div class="nav-section">Principal</div>
+  <div class="nav-item active" onclick="showPage('dashboard')"><span class="icon">📊</span><span>Dashboard</span></div>
+  <div class="nav-item" onclick="showPage('ots')"><span class="icon">📋</span><span>Órdenes OT</span></div>
+  <div class="nav-section">Registros</div>
+  <div class="nav-item" onclick="showPage('clientes')"><span class="icon">👥</span><span>Clientes</span></div>
+  <div class="nav-item" onclick="showPage('equipos')"><span class="icon">🚜</span><span>Equipos</span></div>
+  <div class="nav-item" onclick="showPage('tecnicos')"><span class="icon">👷</span><span>Técnicos</span></div>
+  <div class="nav-section">Agenda</div>
+  <div class="nav-item" onclick="showPage('calendario')"><span class="icon">📅</span><span>Calendario</span></div>
+  <div class="nav-section">Analisis</div>
+  <div class="nav-item" onclick="showPage('reportes')"><span class="icon">📈</span><span>Reportes</span></div>
+  <div class="nav-section">Historial</div>
+  <div class="nav-item" onclick="showPage('historial')"><span class="icon">🕐</span><span>Historial</span></div>
+  <div class="nav-section">Cuenta</div>
+  <div class="nav-item" onclick="showPage('usuario')"><span class="icon">👤</span><span>Mi Cuenta</span></div>
+  <div class="nav-section">Documentos</div>
+  <div class="nav-item" onclick="showPage('documentos')"><span class="icon">📄</span><span>Generar Docs</span></div>
+</nav>
+
+<main class="main">
+
+
+<div class="page active" id="page-dashboard">
+  <div class="page-header">
+    <div class="page-title">Panel <span>Principal</span></div>
+    <div style="font-size:13px;color:var(--muted)">Todo en un vistazo</div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-label">Total OTs</div><div class="stat-value" id="stat-total">0</div><div class="stat-icon">📋</div></div>
+    <div class="stat-card blue"><div class="stat-label">En Proceso</div><div class="stat-value" id="stat-proceso">0</div><div class="stat-icon">⚙️</div></div>
+    <div class="stat-card"><div class="stat-label">Pendientes</div><div class="stat-value" id="stat-pendiente">0</div><div class="stat-icon">⏳</div></div>
+    <div class="stat-card green"><div class="stat-label">Entregadas</div><div class="stat-value" id="stat-entregado">0</div><div class="stat-icon">✅</div></div>
+    <div class="stat-card"><div class="stat-label">Citas Hoy</div><div class="stat-value" id="stat-citas">0</div><div class="stat-icon">📅</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    <div class="card">
+      <div class="card-title">📋 Últimas Órdenes</div>
+      <div id="dash-recent-ots"><div class="table-empty">Sin órdenes registradas</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">⚡ Acciones Rápidas</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button class="btn btn-primary btn-lg" onclick="openModal('modal-ot')">➕ Nueva Orden de Trabajo</button>
+        <button class="btn btn-dark" onclick="checkCreateCliente()">👤 Nuevo Cliente</button>
+        <button class="btn btn-ghost" onclick="checkCreateEquipo()">🚜 Nuevo Equipo</button>
+        <button class="btn btn-ghost" onclick="showPage('documentos')">📄 Generar Documento</button>
+        <button class="btn btn-ghost" onclick="showPage('tecnicos')">👷 Ver Técnicos</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="page" id="page-ots">
+  <div class="page-header">
+    <div class="page-title">Órdenes de <span>Trabajo</span></div>
+    <button class="btn btn-primary" onclick="openModal('modal-ot')">➕ Nueva OT</button>
+  </div>
+  <div class="card">
+    <div class="search-bar">
+      <input class="search-input" type="text" placeholder="🔍 Buscar por N° OT, cliente o equipo..." oninput="renderOTs(this.value)">
+      <select onchange="renderOTs('', this.value)" style="max-width:180px">
+        <option value="">Todos los estados</option>
+        <option>Pendiente</option>
+        <option>En Proceso</option>
+        <option>Listo</option>
+        <option>Entregado</option>
+      </select>
+    </div>
+    <div class="table-wrap"><table id="table-ots">
+      <thead><tr>
+        <th>N° OT</th><th>Cliente</th><th>Equipo</th><th>Tipo</th>
+        <th>Ingreso</th><th>Entrega Est.</th><th>Estado</th><th>Acciones</th>
+      </tr></thead>
+      <tbody id="tbody-ots"><tr><td colspan="8" class="table-empty">Sin órdenes. Crea la primera.</td></tr></tbody>
+    </table></div>
+  </div>
+</div>
+
+
+<div class="page" id="page-clientes">
+  <div class="page-header">
+    <div class="page-title"><span>Clientes</span></div>
+    <button class="btn btn-primary" onclick="checkCreateCliente()">➕ Nuevo Cliente</button>
+  </div>
+  <div class="card">
+    <div class="table-wrap"><table>
+      <thead><tr><th>ID</th><th>Nombre</th><th>Teléfono</th><th>Correo</th><th>Ciudad</th><th>OTs</th><th>Acciones</th></tr></thead>
+      <tbody id="tbody-clientes"><tr><td colspan="7" class="table-empty">Sin clientes. Agrega el primero.</td></tr></tbody>
+    </table></div>
+  </div>
+</div>
+
+
+<div class="page" id="page-equipos">
+  <div class="page-header">
+    <div class="page-title"><span>Equipos</span></div>
+    <button class="btn btn-primary" onclick="checkCreateEquipo()">➕ Nuevo Equipo</button>
+  </div>
+  <div class="card">
+    <div class="table-wrap"><table>
+      <thead><tr><th>ID</th><th>Cliente</th><th>Tipo</th><th>Marca / Modelo</th><th>Serie</th><th>Estado</th><th>Acciones</th></tr></thead>
+      <tbody id="tbody-equipos"><tr><td colspan="7" class="table-empty">Sin equipos registrados.</td></tr></tbody>
+    </table></div>
+  </div>
+</div>
+
+
+<div class="page" id="page-documentos">
+  <div class="page-header">
+    <div class="page-title">Generar <span>Documentos</span></div>
+  </div>
+  <div style="display:grid;grid-template-columns:300px 1fr;gap:20px;align-items:start">
+    
+    <div class="card">
+      <div class="card-title">⚙️ Configurar</div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="form-group">
+          <label>Seleccionar OT</label>
+          <select id="doc-ot-select" onchange="loadDocOT()">
+            <option value="">— Selecciona una OT —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tipo de Documento</label>
+          <select id="doc-tipo">
+            <option value="ingreso">📥 OT de Ingreso</option>
+            <option value="diagnostico">🔍 Informe de Diagnóstico</option>
+            <option value="entrega">✅ Informe Final / Entrega</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Nombre del Taller</label>
+          <input type="text" id="doc-taller" placeholder="SERVIMAQ B&S Diesel" value="SERVIMAQ B&S Diesel">
+        </div>
+        <div class="form-group">
+          <label>Teléfono del Taller</label>
+          <input type="text" id="doc-taller-tel" placeholder="+51 968 733 257" value="+51 968 733 257">
+        </div>
+        <button class="btn btn-primary btn-lg" onclick="generateDoc()" style="width:100%">📄 Generar Documento</button>
+      </div>
+    </div>
+    
+    <div class="card" id="doc-result" style="display:none">
+      <div class="card-title">👁️ Vista Previa</div>
+      <div id="doc-content"></div>
+      <div class="share-panel">
+        <div class="share-title">📤 Compartir</div>
+        <div class="share-buttons">
+          <button class="btn btn-whatsapp" onclick="shareWhatsApp()">📱 WhatsApp</button>
+          <button class="btn btn-copy" onclick="copyText()">📋 Copiar Texto</button>
+          <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir / PDF</button>
+        </div>
+      </div>
+    </div>
+    <div class="card" id="doc-placeholder" style="display:flex;align-items:center;justify-content:center;min-height:300px">
+      <div style="text-align:center;color:var(--muted)">
+        <div style="font-size:48px;margin-bottom:12px">📄</div>
+        <div style="font-size:15px;font-weight:500">Selecciona una OT y genera<br>el documento</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="page-tecnicos">
+  <div class="page-header">
+    <div class="page-title">Equipo de <span>Técnicos</span></div>
+    <button class="btn btn-primary" onclick="openModal('modal-tecnico')">➕ Nuevo Técnico</button>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px" id="grid-tecnicos"></div>
+</div>
+
+<div class="page" id="page-reportes">
+  <div class="page-header">
+    <div class="page-title">Reportes &amp; <span>Análisis</span></div>
+  </div>
+  <div class="card" style="margin-bottom:20px">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted)">Período:</span>
+      <button class="rep-tab active" onclick="setRepPeriod('mes',this)">Este mes</button>
+      <button class="rep-tab" onclick="setRepPeriod('trimestre',this)">3 meses</button>
+      <button class="rep-tab" onclick="setRepPeriod('anio',this)">Este año</button>
+      <button class="rep-tab" onclick="setRepPeriod('todo',this)">Todo</button>
+    </div>
+  </div>
+  <div id="rep-content"></div>
+</div>
+
+
+<div class="page" id="page-usuario">
+  <div class="page-header">
+    <div class="page-title">Mi <span>Cuenta</span></div>
+  </div>
+  <div id="usuario-content"></div>
+</div>
+
+<div class="page" id="page-historial">
+  <div class="page-header">
+    <div class="page-title">Historial <span>General</span></div>
+  </div>
+
+  
+  <div class="card" style="margin-bottom:20px">
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px">
+        <input type="text" id="hist-search" placeholder="🔍 Buscar cliente, equipo o N° OT..."
+          oninput="renderHistorial()" style="width:100%">
+      </div>
+      <select id="hist-filter" onchange="renderHistorial()" style="max-width:180px">
+        <option value="todos">👁️ Ver todo</option>
+        <option value="clientes">👥 Por Cliente</option>
+        <option value="equipos">🚜 Por Equipo</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="hist-content"></div>
+</div>
+
+
+<div class="page" id="page-calendario">
+  <div class="page-header">
+    <div class="page-title">Agenda de <span>Citas</span></div>
+    <button class="btn btn-primary" onclick="checkCreateCita()">➕ Nueva Cita</button>
+  </div>
+
+  
+  <div class="card" style="margin-bottom:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <button class="btn btn-ghost" onclick="cambiarMes(-1)">◀ Anterior</button>
+      <div id="cal-titulo" style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--ink)"></div>
+      <button class="btn btn-ghost" onclick="cambiarMes(1)">Siguiente ▶</button>
+    </div>
+    
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px">
+      <div style="text-align:center;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);padding:4px">Dom</div>
+      <div style="text-align:center;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);padding:4px">Lun</div>
+      <div style="text-align:center;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);padding:4px">Mar</div>
+      <div style="text-align:center;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);padding:4px">Mié</div>
+      <div style="text-align:center;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);padding:4px">Jue</div>
+      <div style="text-align:center;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);padding:4px">Vie</div>
+      <div style="text-align:center;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);padding:4px">Sáb</div>
+    </div>
+    <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px"></div>
+  </div>
+
+  
+  <div class="card" id="cal-detalle" style="display:none">
+    <div class="card-title">📋 Citas del <span id="cal-detalle-fecha"></span></div>
+    <div id="cal-detalle-lista"></div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<div class="modal-overlay" id="modal-cliente">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">👤 Nuevo Cliente</div>
+      <button class="modal-close" onclick="closeModal('modal-cliente')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="cliente-edit-id">
+      <div class="form-grid">
+        <div class="form-group"><label>Nombre / Razón Social *</label><input id="c-nombre" placeholder="Ej: Constructora Andina SAC"></div>
+        <div class="form-group"><label>RUC / DNI</label><input id="c-ruc" placeholder="20501234567"></div>
+        <div class="form-group"><label>Contacto Principal</label><input id="c-contacto" placeholder="Nombre del representante"></div>
+        <div class="form-group"><label>Teléfono / WhatsApp *</label><input id="c-tel" placeholder="+51 987 654 321"></div>
+        <div class="form-group span2"><label>Correo Electrónico</label><input id="c-email" type="email" placeholder="correo@empresa.com"></div>
+        <div class="form-group span2"><label>Dirección</label><input id="c-dir" placeholder="Av. Industrial 450"></div>
+        <div class="form-group"><label>Ciudad</label><input id="c-ciudad" placeholder="Lima"></div>
+        <div class="form-group span2"><label>Notas</label><textarea id="c-notas" rows="2" placeholder="Observaciones adicionales..."></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-cliente')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveCliente()">💾 Guardar Cliente</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-overlay" id="modal-equipo">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">🚜 Nuevo Equipo</div>
+      <button class="modal-close" onclick="closeModal('modal-equipo')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="equipo-edit-id">
+      <div class="form-grid three">
+        <div class="form-group"><label>Cliente *</label>
+          <select id="e-cliente"><option value="">— Selecciona —</option></select>
+        </div>
+        <div class="form-group"><label>Tipo de Equipo *</label>
+          <select id="e-tipo">
+            <option>Excavadora</option><option>Cargador Frontal</option><option>Volquete</option>
+            <option>Motoniveladora</option><option>Bulldozer</option><option>Grúa</option>
+            <option>Compactadora</option><option>Retroexcavadora</option><option>Minicargador</option><option>Auto</option><option>Camioneta</option><option>Otro</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Marca *</label><input id="e-marca" placeholder="Caterpillar"></div>
+        <div class="form-group"><label>Modelo *</label><input id="e-modelo" placeholder="320D"></div>
+        <div class="form-group"><label>N° Serie / VIN</label><input id="e-serie" placeholder="CAT320D2024001"></div>
+        <div class="form-group"><label>Año</label><input id="e-año" type="number" placeholder="2021"></div>
+        <div class="form-group"><label>Horómetro Actual</label><input id="e-horometro" placeholder="4520 h"></div>
+        <div class="form-group"><label>Estado</label>
+          <select id="e-estado"><option>Operativo</option><option>En Taller</option><option>Fuera de Servicio</option></select>
+        </div>
+        <div class="form-group"><label>Último Servicio</label><input id="e-ultimo-serv" type="date"></div>
+        <div class="form-group span3"><label>Notas</label><textarea id="e-notas" rows="2"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-equipo')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveEquipo()">💾 Guardar Equipo</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-overlay" id="modal-ot">
+  <div class="modal" style="max-width:780px">
+    <div class="modal-header">
+      <div class="modal-title">📋 Orden de Trabajo</div>
+      <button class="modal-close" onclick="closeModal('modal-ot')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="ot-edit-id">
+      <div class="form-grid">
+        <div class="form-group"><label>Cliente *</label>
+          <select id="ot-cliente" onchange="loadEquiposOT()"><option value="">— Selecciona —</option></select>
+        </div>
+        <div class="form-group"><label>Equipo *</label>
+          <select id="ot-equipo"><option value="">— Primero elige cliente —</option></select>
+        </div>
+        <div class="form-group"><label>Tipo de Trabajo *</label>
+          <select id="ot-tipo">
+            <option>Correctivo</option><option>Preventivo</option><option>Diagnóstico</option><option>Garantía</option><option>Otro</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Técnico Asignado</label>
+          <select id="ot-tecnico-sel" onchange="fillTecnicoNombre()">
+            <option value="">— Selecciona técnico —</option>
+          </select>
+        </div>
+        <input type="hidden" id="ot-tecnico">
+        <div class="form-group"><label>Fecha de Ingreso *</label><input id="ot-fecha-ing" type="date"></div>
+        <div class="form-group"><label>Fecha Entrega Estimada</label><input id="ot-fecha-ent" type="date"></div>
+        <div class="form-group span2"><label>Descripción / Problema Reportado *</label>
+          <textarea id="ot-descripcion" rows="3" placeholder="Describe el problema o trabajo solicitado..."></textarea>
+        </div>
+        <div class="form-group span2"><label>Diagnóstico (se puede completar después)</label>
+          <textarea id="ot-diagnostico" rows="3" placeholder="Resultado del diagnóstico técnico..."></textarea>
+        </div>
+        <div class="form-group span2"><label>Trabajos Realizados (se puede completar al cerrar)</label>
+          <textarea id="ot-trabajos" rows="3" placeholder="Detalle de trabajos realizados..."></textarea>
+        </div>
+        <div class="form-group span2"><label>Repuestos Utilizados</label>
+          <textarea id="ot-repuestos" rows="2" placeholder="Lista de repuestos, cantidad y código..."></textarea>
+        </div>
+        <div class="form-group"><label>Mano de Obra (S/.)</label><input id="ot-mo" type="number" placeholder="0.00" step="0.01"></div>
+        <div class="form-group"><label>Repuestos (S/.)</label><input id="ot-rep-cost" type="number" placeholder="0.00" step="0.01"></div>
+        <div class="form-group"><label>Estado</label>
+          <select id="ot-estado"><option>Pendiente</option><option>En Proceso</option><option>Listo</option><option>Entregado</option></select>
+        </div>
+        <div class="form-group span2"><label>Observaciones</label>
+          <textarea id="ot-obs" rows="2" placeholder="Observaciones adicionales..."></textarea>
+        </div>
+        <div class="form-group span2">
+          <label>📷 Fotos de la OT</label>
+          <div id="ot-foto-preview" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px"></div>
+          <label class="btn btn-ghost" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px">
+            📷 Agregar Foto
+            <input type="file" id="ot-foto-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFotos(event)">
+          </label>
+          <span style="font-size:11px;color:var(--muted);margin-left:8px">Se comprimen a 480×320 automáticamente</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-ot')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveOT()">💾 Guardar OT</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-cita">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">📅 Nueva Cita</div>
+      <button class="modal-close" onclick="closeModal('modal-cita')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="cita-edit-id">
+      <div class="form-grid">
+        <div class="form-group"><label>Cliente *</label>
+          <select id="cita-cliente"><option value="">— Selecciona —</option></select>
+        </div>
+        <div class="form-group"><label>Equipo</label>
+          <select id="cita-equipo"><option value="">— Selecciona —</option></select>
+        </div>
+        <div class="form-group"><label>Fecha *</label>
+          <input type="date" id="cita-fecha">
+        </div>
+        <div class="form-group"><label>Hora *</label>
+          <input type="time" id="cita-hora">
+        </div>
+        <div class="form-group"><label>Tipo de Servicio</label>
+          <select id="cita-tipo">
+            <option>Diagnóstico</option>
+            <option>Mantenimiento Preventivo</option>
+            <option>Reparación</option>
+            <option>Entrega de Equipo</option>
+            <option>Revisión / Presupuesto</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Técnico</label>
+          <input type="text" id="cita-tecnico" placeholder="Nombre del técnico">
+        </div>
+        <div class="form-group span2"><label>Notas</label>
+          <textarea id="cita-notas" rows="2" placeholder="Observaciones, indicaciones especiales..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-cita')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveCita()">💾 Guardar Cita</button>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- MODAL TÉCNICO -->
+<div class="modal-overlay" id="modal-tecnico">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">👷 Técnico</div>
+      <button class="modal-close" onclick="closeModal('modal-tecnico')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="tec-edit-id">
+      <div class="form-grid">
+        <div class="form-group"><label>Nombre completo *</label>
+          <input id="tec-nombre" placeholder="Ej: Juan Pérez">
+        </div>
+        <div class="form-group"><label>Teléfono / WhatsApp *</label>
+          <input id="tec-tel" placeholder="+51 987 654 321">
+        </div>
+        <div class="form-group"><label>Especialidad</label>
+          <select id="tec-especialidad">
+            <option>Mecánico General</option>
+            <option>Hidráulica</option>
+            <option>Electricidad</option>
+            <option>Soldadura</option>
+            <option>Motor</option>
+            <option>Transmisión</option>
+            <option>Neumáticos</option>
+            <option>Pintura</option>
+            <option>Ayudante</option>
+            <option>Limpieza</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Nivel</label>
+          <select id="tec-nivel">
+            <option value="Junior">Junior</option>
+            <option value="Senior">Senior</option>
+            <option value="Jefe">Jefe de Taller</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Color identificador</label>
+          <input id="tec-color" type="color" value="#3498db" style="height:40px;padding:4px">
+        </div>
+        <div class="form-group"><label>PIN de acceso (4 dígitos)</label>
+          <input id="tec-pin" type="password" maxlength="4" placeholder="••••" inputmode="numeric"
+            style="letter-spacing:8px;font-size:20px;text-align:center">
+        </div>
+        <div class="form-group span2"><label>Notas</label>
+          <textarea id="tec-notas" rows="2" placeholder="Observaciones..."></textarea>
+        </div>
+      </div>
+      <!-- PERMISOS -->
+      <div style="margin-top:14px;border-top:2px solid var(--border);padding-top:14px">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:12px">🔐 Permisos de acceso</div>
+        <div class="perm-section">
+          <div class="perm-title">Órdenes de Trabajo</div>
+          <div class="perm-row"><span class="perm-label">Ver sus propias OTs</span>
+            <label class="toggle"><input type="checkbox" id="perm-ver-ots" checked><span class="toggle-slider"></span></label></div>
+          <div class="perm-row"><span class="perm-label">Crear nuevas OTs</span>
+            <label class="toggle"><input type="checkbox" id="perm-crear-ots"><span class="toggle-slider"></span></label></div>
+          <div class="perm-row"><span class="perm-label">Editar/Eliminar OTs</span>
+            <label class="toggle"><input type="checkbox" id="perm-editar-ots"><span class="toggle-slider"></span></label></div>
+        </div>
+        <div class="perm-section">
+          <div class="perm-title">Registros</div>
+          <div class="perm-row"><span class="perm-label">Ver clientes y equipos</span>
+            <label class="toggle"><input type="checkbox" id="perm-ver-clientes"><span class="toggle-slider"></span></label></div>
+        </div>
+        <div class="perm-section">
+          <div class="perm-title">Reportes e ingresos</div>
+          <div class="perm-row"><span class="perm-label">Ver reportes e ingresos</span>
+            <label class="toggle"><input type="checkbox" id="perm-ver-reportes"><span class="toggle-slider"></span></label></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-tecnico')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveTecnico()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FOTOS -->
+<div class="modal-overlay" id="modal-fotos">
+  <div class="modal" style="max-width:780px">
+    <div class="modal-header">
+      <div class="modal-title">📷 Fotos de la OT <span id="modal-fotos-titulo" style="color:var(--amber)"></span></div>
+      <button class="modal-close" onclick="closeModal('modal-fotos')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="modal-fotos-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px"></div>
+      <div style="margin-top:16px">
+        <label class="btn btn-primary" style="cursor:pointer">
+          📷 Cámara / Galería
+          <input type="file" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFotosModal(event)">
+        </label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+
+// DATA STORE
+
+const DB = {
+  clientes: JSON.parse(localStorage.getItem('tp_clientes') || '[]'),
+  equipos:  JSON.parse(localStorage.getItem('tp_equipos')  || '[]'),
+  ots:      JSON.parse(localStorage.getItem('tp_ots')      || '[]'),
+  save() {
+    localStorage.setItem('tp_clientes', JSON.stringify(this.clientes));
+    localStorage.setItem('tp_equipos',  JSON.stringify(this.equipos));
+    localStorage.setItem('tp_ots',      JSON.stringify(this.ots));
+  }
+};
+
+let otCounter = DB.ots.length > 0 ? Math.max(...DB.ots.map(o => parseInt(o.id.split('-')[2]||0))) + 1 : 1;
+
+
+// NAVIGATION
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick') && n.getAttribute('onclick').includes(name)) n.classList.add('active');
+  });
+  if (name === 'dashboard') renderDashboard();
+  if (name === 'ots') renderOTs();
+  if (name === 'clientes') renderClientes();
+  if (name === 'equipos') renderEquipos();
+  if (name === 'documentos') renderDocSelects();
+  if (name === 'historial') renderHistorial();
+  if (name === 'usuario') renderUsuarioPage();
+  if (name === 'reportes') renderReportes();
+  if (name === 'tecnicos') { syncAll().then(function(){ renderTecnicos(); }); }
+  if (name === 'calendario') { populateClienteSelects(); renderCalendario(); }
+}
+
+
+// MODAL
+
+function openModal(id) {
+  if (id === 'modal-ot') { setTimeout(applyOTFieldLocks, 50); }
+  document.getElementById(id).classList.add('open');
+  if (id === 'modal-ot' || id === 'modal-equipo' || id === 'modal-cita') populateClienteSelects();
+  if (id === 'modal-ot') populateTecnicoSelects();
+  
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  clearForm(id);
+}
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); });
+});
+
+function clearForm(id) {
+  document.getElementById(id).querySelectorAll('input:not([type=hidden]),textarea').forEach(el => el.value = '');
+  document.getElementById(id).querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+  const hiddenId = id === 'modal-cliente' ? 'cliente-edit-id' :
+                   id === 'modal-equipo'  ? 'equipo-edit-id' : 'ot-edit-id';
+  const el = document.getElementById(hiddenId);
+  if (el) el.value = '';
+  if (id === 'modal-ot') {
+    fotosTemp = [];
+    const prev = document.getElementById('ot-foto-preview');
+    if (prev) prev.innerHTML = '';
+  }
+}
+
+
+// CLIENTES
+
+function saveCliente() {
+  if (!canCreateClienteEquipo()) {
+    var _chkId = document.getElementById('cliente-edit-id') ? document.getElementById('cliente-edit-id').value : '';
+    if (!_chkId) { toast('Sin permiso para crear clientes', 'error'); return; }
+  }
+  const nombre = document.getElementById('c-nombre').value.trim();
+  const tel    = document.getElementById('c-tel').value.trim();
+  if (!nombre) return toast('El nombre es obligatorio', 'error');
+
+  const editId = document.getElementById('cliente-edit-id').value;
+  if (editId) {
+    const c = DB.clientes.find(x => x.id === editId);
+    Object.assign(c, getClienteForm());
+  } else {
+    const id = 'C-' + String(DB.clientes.length + 1).padStart(3, '0');
+    DB.clientes.push({ id, ...getClienteForm() });
+  }
+  DB.save();
+  closeModal('modal-cliente');
+  renderClientes();
+  toast('✅ Cliente guardado');
+  var _savedCli = DB.clientes.find(function(x){ return x.id === (document.getElementById('cliente-edit-id').value || DB.clientes[DB.clientes.length-1].id); });
+  if (_savedCli) cloudPushCliente(_savedCli);
+}
+function getClienteForm() {
+  return {
+    nombre:   document.getElementById('c-nombre').value.trim(),
+    ruc:      document.getElementById('c-ruc').value.trim(),
+    contacto: document.getElementById('c-contacto').value.trim(),
+    tel:      document.getElementById('c-tel').value.trim(),
+    email:    document.getElementById('c-email').value.trim(),
+    dir:      document.getElementById('c-dir').value.trim(),
+    ciudad:   document.getElementById('c-ciudad').value.trim(),
+    notas:    document.getElementById('c-notas').value.trim(),
+  };
+}
+function renderClientes() {
+  const tbody = document.getElementById('tbody-clientes');
+  if (!DB.clientes.length) { tbody.innerHTML = '<tr><td colspan="7" class="table-empty">Sin clientes aún.</td></tr>'; return; }
+  tbody.innerHTML = DB.clientes.map(c => {
+    const ots = DB.ots.filter(o => o.clienteId === c.id).length;
+    return `<tr>
+      <td><b>${c.id}</b></td>
+      <td>${c.nombre}</td>
+      <td>${c.tel || '—'}</td>
+      <td style="font-size:12px;color:var(--muted)">${c.email || '—'}</td>
+      <td>${c.ciudad || '—'}</td>
+      <td><span class="badge badge-progress">${ots} OT</span></td>
+      <td><div class="action-btns">
+        <button class="btn btn-ghost btn-sm" onclick="editCliente('${c.id}')">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteCliente('${c.id}')">🗑️</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+function editCliente(id) {
+  const c = DB.clientes.find(x => x.id === id);
+  document.getElementById('cliente-edit-id').value = id;
+  document.getElementById('c-nombre').value = c.nombre;
+  document.getElementById('c-ruc').value = c.ruc || '';
+  document.getElementById('c-contacto').value = c.contacto || '';
+  document.getElementById('c-tel').value = c.tel || '';
+  document.getElementById('c-email').value = c.email || '';
+  document.getElementById('c-dir').value = c.dir || '';
+  document.getElementById('c-ciudad').value = c.ciudad || '';
+  document.getElementById('c-notas').value = c.notas || '';
+  openModal('modal-cliente');
+}
+function deleteCliente(id) {
+  if (!confirm('¿Eliminar este cliente?')) return;
+  DB.clientes = DB.clientes.filter(function(x){ return x.id !== id; });
+  DB.save(); renderClientes(); toast('Cliente eliminado');
+  cloudDelCliente(id);
+}
+
+
+// EQUIPOS
+
+function populateClienteSelects() {
+  ['e-cliente', 'ot-cliente'].forEach(sid => {
+    const sel = document.getElementById(sid);
+    if (!sel) return;
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">— Selecciona cliente —</option>';
+    DB.clientes.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id; opt.textContent = `${c.id} — ${c.nombre}`;
+      sel.appendChild(opt);
+    });
+    if (cur) sel.value = cur;
+  });
+}
+function saveEquipo() {
+  if (!canCreateClienteEquipo()) {
+    var _chkEqId = document.getElementById('equipo-edit-id') ? document.getElementById('equipo-edit-id').value : '';
+    if (!_chkEqId) { toast('Sin permiso para crear equipos', 'error'); return; }
+  }
+  const clienteId = document.getElementById('e-cliente').value;
+  const marca     = document.getElementById('e-marca').value.trim();
+  const modelo    = document.getElementById('e-modelo').value.trim();
+  if (!clienteId || !marca) return toast('Cliente y marca son obligatorios', 'error');
+
+  const editId = document.getElementById('equipo-edit-id').value;
+  if (editId) {
+    const e = DB.equipos.find(x => x.id === editId);
+    Object.assign(e, getEquipoForm());
+  } else {
+    const id = 'E-' + String(DB.equipos.length + 1).padStart(3, '0');
+    DB.equipos.push({ id, ...getEquipoForm() });
+  }
+  DB.save(); closeModal('modal-equipo'); renderEquipos(); toast('✅ Equipo guardado');
+  var _savedEq = DB.equipos.find(function(x){ return x.id === (document.getElementById('equipo-edit-id').value || DB.equipos[DB.equipos.length-1].id); });
+  if (_savedEq) cloudPushEquipo(_savedEq);
+}
+function getEquipoForm() {
+  return {
+    clienteId:   document.getElementById('e-cliente').value,
+    tipo:        document.getElementById('e-tipo').value,
+    marca:       document.getElementById('e-marca').value.trim(),
+    modelo:      document.getElementById('e-modelo').value.trim(),
+    serie:       document.getElementById('e-serie').value.trim(),
+    año:         document.getElementById('e-año').value,
+    horometro:   document.getElementById('e-horometro').value.trim(),
+    estado:      document.getElementById('e-estado').value,
+    ultimoServ:  document.getElementById('e-ultimo-serv').value,
+    notas:       document.getElementById('e-notas').value.trim(),
+  };
+}
+function renderEquipos() {
+  const tbody = document.getElementById('tbody-equipos');
+  if (!DB.equipos.length) { tbody.innerHTML = '<tr><td colspan="7" class="table-empty">Sin equipos registrados.</td></tr>'; return; }
+  tbody.innerHTML = DB.equipos.map(e => {
+    const cliente = DB.clientes.find(c => c.id === e.clienteId);
+    const badge = e.estado === 'Operativo' ? 'badge-done' : e.estado === 'En Taller' ? 'badge-progress' : 'badge-pending';
+    return `<tr>
+      <td><b>${e.id}</b></td>
+      <td>${cliente ? cliente.nombre : '—'}</td>
+      <td>${e.tipo}</td>
+      <td><b>${e.marca}</b> ${e.modelo}</td>
+      <td style="font-size:12px;color:var(--muted)">${e.serie || '—'}</td>
+      <td><span class="badge ${badge}">${e.estado}</span></td>
+      <td><div class="action-btns">
+        <button class="btn btn-ghost btn-sm" onclick="editEquipo('${e.id}')">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteEquipo('${e.id}')">🗑️</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+function editEquipo(id) {
+  const e = DB.equipos.find(x => x.id === id);
+  document.getElementById('equipo-edit-id').value = id;
+  populateClienteSelects();
+  document.getElementById('e-cliente').value = e.clienteId;
+  document.getElementById('e-tipo').value    = e.tipo;
+  document.getElementById('e-marca').value   = e.marca;
+  document.getElementById('e-modelo').value  = e.modelo;
+  document.getElementById('e-serie').value   = e.serie || '';
+  document.getElementById('e-año').value     = e.año || '';
+  document.getElementById('e-horometro').value = e.horometro || '';
+  document.getElementById('e-estado').value  = e.estado;
+  document.getElementById('e-ultimo-serv').value = e.ultimoServ || '';
+  document.getElementById('e-notas').value   = e.notas || '';
+  openModal('modal-equipo');
+}
+function deleteEquipo(id) {
+  if (!confirm('¿Eliminar este equipo?')) return;
+  DB.equipos = DB.equipos.filter(function(x){ return x.id !== id; });
+  DB.save(); renderEquipos(); toast('Equipo eliminado');
+  cloudDelEquipo(id);
+}
+
+
+// ÓRDENES DE TRABAJO
+
+function loadEquiposOT() {
+  const clienteId = document.getElementById('ot-cliente').value;
+  const sel = document.getElementById('ot-equipo');
+  sel.innerHTML = '<option value="">— Selecciona equipo —</option>';
+  DB.equipos.filter(e => e.clienteId === clienteId).forEach(e => {
+    const opt = document.createElement('option');
+    opt.value = e.id;
+    opt.textContent = `${e.id} — ${e.marca} ${e.modelo} (${e.tipo})`;
+    sel.appendChild(opt);
+  });
+}
+function saveOT() {
+  const clienteId = document.getElementById('ot-cliente').value;
+  const equipoId  = document.getElementById('ot-equipo').value;
+  const desc      = document.getElementById('ot-descripcion').value.trim();
+  const fechaIng  = document.getElementById('ot-fecha-ing').value;
+  if (!clienteId || !equipoId || !desc || !fechaIng)
+    return toast('Cliente, equipo, descripción y fecha son obligatorios', 'error');
+
+  const year = new Date().getFullYear();
+  const editId = document.getElementById('ot-edit-id').value;
+  if (editId) {
+    const ot = DB.ots.find(x => x.id === editId);
+    const fotosExistentes = ot.fotos || [];
+    Object.assign(ot, getOTForm());
+    ot.fotos = [...fotosExistentes, ...fotosTemp];
+  } else {
+    const num = String(otCounter++).padStart(3, '0');
+    const id  = `OT-${year}-${num}`;
+    DB.ots.unshift({ id, fechaCreacion: new Date().toISOString(), ...getOTForm(), fotos: [...fotosTemp] });
+  }
+  fotosTemp = [];
+  DB.save(); closeModal('modal-ot'); renderOTs(); renderDashboard();
+  toast('✅ OT guardada');
+  var _otId = document.getElementById('ot-edit-id').value || (DB.ots[0] ? DB.ots[0].id : null);
+  var _savedOT2 = _otId ? DB.ots.find(function(x){ return x.id === _otId; }) : null;
+  if (_savedOT2) cloudPushOT(_savedOT2);
+}
+function getOTForm() {
+  return {
+    clienteId:   document.getElementById('ot-cliente').value,
+    equipoId:    document.getElementById('ot-equipo').value,
+    tipo:        document.getElementById('ot-tipo').value,
+    tecnico:     document.getElementById('ot-tecnico').value.trim(),
+    fechaIng:    document.getElementById('ot-fecha-ing').value,
+    fechaEnt:    document.getElementById('ot-fecha-ent').value,
+    descripcion: document.getElementById('ot-descripcion').value.trim(),
+    diagnostico: document.getElementById('ot-diagnostico').value.trim(),
+    trabajos:    document.getElementById('ot-trabajos').value.trim(),
+    repuestos:   document.getElementById('ot-repuestos').value.trim(),
+    mo:          document.getElementById('ot-mo').value,
+    repCost:     document.getElementById('ot-rep-cost').value,
+    estado:      document.getElementById('ot-estado').value,
+    obs:         document.getElementById('ot-obs').value.trim(),
+  };
+}
+function getFotoBadge(ot) {
+  const n = (ot.fotos || []).length;
+  return n > 0 ? '📷 ' + n : '📷';
+}
+
+function renderOTs(search = '', filterEstado = '') {
+  const tbody = document.getElementById('tbody-ots');
+  let list = [...DB.ots];
+  if (search) {
+    const s = search.toLowerCase();
+    list = list.filter(o => o.id.toLowerCase().includes(s) ||
+      (DB.clientes.find(c=>c.id===o.clienteId)?.nombre||'').toLowerCase().includes(s) ||
+      (DB.equipos.find(e=>e.id===o.equipoId)?.marca||'').toLowerCase().includes(s));
+  }
+  if (filterEstado) list = list.filter(o => o.estado === filterEstado);
+  if (!list.length) { tbody.innerHTML = '<tr><td colspan="8" class="table-empty">No hay órdenes.</td></tr>'; return; }
+  tbody.innerHTML = list.map(ot => {
+    const cliente = DB.clientes.find(c => c.id === ot.clienteId);
+    const equipo  = DB.equipos.find(e => e.id === ot.equipoId);
+    const badgeMap = { 'Pendiente': 'badge-pending', 'En Proceso': 'badge-progress', 'Listo': 'badge-done', 'Entregado': 'badge-delivered' };
+    return `<tr>
+      <td><b>${ot.id}</b></td>
+      <td>${cliente?.nombre || '—'}</td>
+      <td>${equipo ? equipo.marca+' '+equipo.modelo : '—'}</td>
+      <td><span style="font-size:12px">${ot.tipo}</span></td>
+      <td style="font-size:12px">${fmtDate(ot.fechaIng)}</td>
+      <td style="font-size:12px">${fmtDate(ot.fechaEnt)}</td>
+      <td><span class="badge ${badgeMap[ot.estado]||'badge-pending'}">${ot.estado}</span></td>
+      <td><div class="action-btns">
+        <button class="btn btn-ghost btn-sm" onclick="editOT('${ot.id}')" title="Editar">✏️</button>
+        <button class="btn btn-primary btn-sm" onclick="quickDoc('${ot.id}')" title="Generar documento">📄</button>
+        <button class="btn btn-whatsapp btn-sm" onclick="enviarWhatsAppOT('${ot.id}')" title="WhatsApp cliente">📲</button>
+        <button class="btn btn-dark btn-sm" onclick="enviarOTATecnico('${ot.id}')" title="Enviar a técnico" style="background:#2c3e50;color:white">👷</button>
+        <button class="btn btn-ghost btn-sm" onclick="verFotos('${ot.id}')" title="Ver fotos">${getFotoBadge(ot)}</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteOT('${ot.id}')" title="Eliminar">🗑️</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+function editOT(id) {
+  const ot = DB.ots.find(x => x.id === id);
+  document.getElementById('ot-edit-id').value = id;
+  populateClienteSelects();
+  document.getElementById('ot-cliente').value = ot.clienteId;
+  loadEquiposOT();
+  document.getElementById('ot-equipo').value      = ot.equipoId;
+  document.getElementById('ot-tipo').value        = ot.tipo;
+  document.getElementById('ot-tecnico').value     = ot.tecnico || '';
+  populateTecnicoSelects();
+  if (document.getElementById('ot-tecnico-sel')) document.getElementById('ot-tecnico-sel').value = ot.tecnico || '';
+  
+  document.getElementById('ot-fecha-ing').value   = ot.fechaIng || '';
+  document.getElementById('ot-fecha-ent').value   = ot.fechaEnt || '';
+  document.getElementById('ot-descripcion').value = ot.descripcion || '';
+  document.getElementById('ot-diagnostico').value = ot.diagnostico || '';
+  document.getElementById('ot-trabajos').value    = ot.trabajos || '';
+  document.getElementById('ot-repuestos').value   = ot.repuestos || '';
+  document.getElementById('ot-mo').value          = ot.mo || '';
+  document.getElementById('ot-rep-cost').value    = ot.repCost || '';
+  document.getElementById('ot-estado').value      = ot.estado;
+  document.getElementById('ot-obs').value         = ot.obs || '';
+  openModal('modal-ot');
+}
+function deleteOT(id) {
+  if (!confirm('¿Eliminar esta OT?')) return;
+  DB.ots = DB.ots.filter(x => x.id !== id);
+  DB.save(); renderOTs(); renderDashboard(); toast('OT eliminada');
+  cloudDelOT(id);
+}
+function quickDoc(id) {
+  showPage('documentos');
+  setTimeout(() => {
+    document.getElementById('doc-ot-select').value = id;
+    loadDocOT();
+  }, 100);
+}
+
+
+// DASHBOARD
+
+function renderDashboard() {
+  document.getElementById('stat-total').textContent     = DB.ots.length;
+  document.getElementById('stat-proceso').textContent   = DB.ots.filter(o=>o.estado==='En Proceso').length;
+  document.getElementById('stat-pendiente').textContent = DB.ots.filter(o=>o.estado==='Pendiente').length;
+  document.getElementById('stat-entregado').textContent = DB.ots.filter(o=>o.estado==='Entregado').length;
+  const hoyStr = new Date().toISOString().split('T')[0];
+  document.getElementById('stat-citas').textContent = (DB.citas||[]).filter(c=>c.fecha===hoyStr).length;
+
+  const recent = DB.ots.slice(0, 5);
+  const div = document.getElementById('dash-recent-ots');
+  if (!recent.length) { div.innerHTML = '<div class="table-empty">Sin órdenes</div>'; return; }
+  div.innerHTML = recent.map(ot => {
+    const c = DB.clientes.find(x=>x.id===ot.clienteId);
+    const e = DB.equipos.find(x=>x.id===ot.equipoId);
+    const badgeMap = { 'Pendiente':'badge-pending','En Proceso':'badge-progress','Listo':'badge-done','Entregado':'badge-delivered' };
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div>
+        <div style="font-weight:700;font-size:14px">${ot.id}</div>
+        <div style="font-size:12px;color:var(--muted)">${c?.nombre||'—'} · ${e ? e.marca+' '+e.modelo : '—'}</div>
+      </div>
+      <span class="badge ${badgeMap[ot.estado]||''}">${ot.estado}</span>
+    </div>`;
+  }).join('');
+}
+
+
+// DOCUMENTOS
+
+function renderDocSelects() {
+  const sel = document.getElementById('doc-ot-select');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">— Selecciona una OT —</option>';
+  DB.ots.forEach(ot => {
+    const c = DB.clientes.find(x=>x.id===ot.clienteId);
+    const opt = document.createElement('option');
+    opt.value = ot.id;
+    opt.textContent = `${ot.id} — ${c?.nombre||'—'} (${ot.estado})`;
+    sel.appendChild(opt);
+  });
+  if (cur) sel.value = cur;
+}
+function loadDocOT() { /* ready for generate */ }
+
+let lastDocText = '';
+
+function generateDoc() {
+  const otId = document.getElementById('doc-ot-select').value;
+  const tipo  = document.getElementById('doc-tipo').value;
+  const taller = document.getElementById('doc-taller').value.trim() || 'SERVIMAQ B&S Diesel';
+  const tallerTel = document.getElementById('doc-taller-tel').value.trim() || '';
+
+  if (!otId) return toast('Selecciona una OT primero', 'error');
+
+  const ot = DB.ots.find(x => x.id === otId);
+  const cliente = DB.clientes.find(x => x.id === ot.clienteId);
+  const equipo  = DB.equipos.find(x => x.id === ot.equipoId);
+  const total   = (parseFloat(ot.mo)||0) + (parseFloat(ot.repCost)||0);
+
+  const tipoLabel = tipo === 'ingreso' ? 'OT DE INGRESO' : tipo === 'diagnostico' ? 'INFORME DE DIAGNÓSTICO' : 'INFORME FINAL DE ENTREGA';
+
+  let html = `
+  <div class="doc-preview" id="printable-doc">
+    <div class="doc-header-bar">
+      <div>
+        <div class="doc-company">🔧 ${taller}</div>
+        ${tallerTel ? `<div style="font-size:12px;color:#aaa;margin-top:2px">📞 ${tallerTel}</div>` : ''}
+      </div>
+      <div class="doc-doc-type">${tipoLabel}</div>
+    </div>
+
+    <div class="doc-section">
+      <div class="doc-section-title">Información del Documento</div>
+      <div class="doc-row"><span class="doc-key">N° Orden:</span><span class="doc-val"><b>${ot.id}</b></span></div>
+      <div class="doc-row"><span class="doc-key">Fecha:</span><span class="doc-val">${new Date().toLocaleDateString('es-PE',{day:'2-digit',month:'long',year:'numeric'})}</span></div>
+      <div class="doc-row"><span class="doc-key">Tipo de Trabajo:</span><span class="doc-val">${ot.tipo}</span></div>
+      ${ot.tecnico ? `<div class="doc-row"><span class="doc-key">Técnico:</span><span class="doc-val">${ot.tecnico}</span></div>` : ''}
+    </div>
+
+    <div class="doc-section">
+      <div class="doc-section-title">Datos del Cliente</div>
+      <div class="doc-row"><span class="doc-key">Cliente:</span><span class="doc-val">${cliente?.nombre||'—'}</span></div>
+      ${cliente?.ruc ? `<div class="doc-row"><span class="doc-key">RUC/DNI:</span><span class="doc-val">${cliente.ruc}</span></div>` : ''}
+      ${cliente?.contacto ? `<div class="doc-row"><span class="doc-key">Contacto:</span><span class="doc-val">${cliente.contacto}</span></div>` : ''}
+      ${cliente?.tel ? `<div class="doc-row"><span class="doc-key">Teléfono:</span><span class="doc-val">${cliente.tel}</span></div>` : ''}
+    </div>
+
+    <div class="doc-section">
+      <div class="doc-section-title">Datos del Equipo</div>
+      <div class="doc-row"><span class="doc-key">Tipo:</span><span class="doc-val">${equipo?.tipo||'—'}</span></div>
+      <div class="doc-row"><span class="doc-key">Marca / Modelo:</span><span class="doc-val">${equipo ? equipo.marca+' '+equipo.modelo : '—'}</span></div>
+      ${equipo?.serie ? `<div class="doc-row"><span class="doc-key">N° Serie:</span><span class="doc-val">${equipo.serie}</span></div>` : ''}
+      ${equipo?.año ? `<div class="doc-row"><span class="doc-key">Año:</span><span class="doc-val">${equipo.año}</span></div>` : ''}
+      ${equipo?.horometro ? `<div class="doc-row"><span class="doc-key">Horómetro:</span><span class="doc-val">${equipo.horometro}</span></div>` : ''}
+    </div>`;
+
+  if (tipo === 'ingreso') {
+    html += `
+    <div class="doc-section">
+      <div class="doc-section-title">Trabajo Solicitado</div>
+      <div style="background:var(--fog);border-radius:6px;padding:12px;font-size:13px;line-height:1.6">${ot.descripcion || '—'}</div>
+    </div>
+    <div class="doc-section">
+      <div class="doc-section-title">Fechas</div>
+      <div class="doc-row"><span class="doc-key">Fecha de Ingreso:</span><span class="doc-val">${fmtDate(ot.fechaIng)}</span></div>
+      <div class="doc-row"><span class="doc-key">Entrega Estimada:</span><span class="doc-val">${fmtDate(ot.fechaEnt) || 'Por confirmar'}</span></div>
+    </div>
+    <div class="doc-section">
+      <div class="doc-section-title">Condición de Recepción</div>
+      <div style="background:var(--fog);border:1px solid var(--border);border-radius:6px;padding:12px;min-height:60px;font-size:12px;color:var(--muted)">${ot.obs || 'Se recibe equipo para diagnóstico y/o reparación según lo indicado.'}</div>
+    </div>`;
+  }
+
+  if (tipo === 'diagnostico') {
+    html += `
+    <div class="doc-section">
+      <div class="doc-section-title">Problema Reportado</div>
+      <div style="background:var(--fog);border-radius:6px;padding:12px;font-size:13px">${ot.descripcion || '—'}</div>
+    </div>
+    <div class="doc-section">
+      <div class="doc-section-title">Diagnóstico Técnico</div>
+      <div style="background:#fffbe6;border:1px solid #ffe58f;border-radius:6px;padding:14px;font-size:13px;line-height:1.7">${ot.diagnostico || 'Diagnóstico en proceso...'}</div>
+    </div>
+    ${ot.repuestos ? `<div class="doc-section">
+      <div class="doc-section-title">Repuestos / Materiales Requeridos</div>
+      <div style="background:var(--fog);border-radius:6px;padding:12px;font-size:13px">${ot.repuestos}</div>
+    </div>` : ''}
+    <div class="doc-section">
+      <div class="doc-section-title">Presupuesto Estimado</div>
+      <table class="doc-table">
+        <thead><tr><th>Concepto</th><th style="text-align:right">Monto (S/.)</th></tr></thead>
+        <tbody>
+          <tr><td>Mano de Obra</td><td style="text-align:right">${formatMoney(ot.mo)}</td></tr>
+          <tr><td>Repuestos y Materiales</td><td style="text-align:right">${formatMoney(ot.repCost)}</td></tr>
+          <tr class="doc-total-row"><td><b>TOTAL ESTIMADO</b></td><td style="text-align:right"><b>${formatMoney(total)}</b></td></tr>
+        </tbody>
+      </table>
+    </div>`;
+  }
+
+  if (tipo === 'entrega') {
+    html += `
+    <div class="doc-section">
+      <div class="doc-section-title">Trabajos Realizados</div>
+      <div style="background:var(--fog);border-radius:6px;padding:12px;font-size:13px;line-height:1.7">${ot.trabajos || ot.descripcion || '—'}</div>
+    </div>
+    ${ot.repuestos ? `<div class="doc-section">
+      <div class="doc-section-title">Repuestos Utilizados</div>
+      <div style="background:var(--fog);border-radius:6px;padding:12px;font-size:13px">${ot.repuestos}</div>
+    </div>` : ''}
+    <div class="doc-section">
+      <div class="doc-section-title">Resumen de Costos</div>
+      <table class="doc-table">
+        <thead><tr><th>Concepto</th><th style="text-align:right">Monto (S/.)</th></tr></thead>
+        <tbody>
+          <tr><td>Mano de Obra</td><td style="text-align:right">${formatMoney(ot.mo)}</td></tr>
+          <tr><td>Repuestos y Materiales</td><td style="text-align:right">${formatMoney(ot.repCost)}</td></tr>
+          <tr class="doc-total-row"><td><b>TOTAL</b></td><td style="text-align:right"><b>${formatMoney(total)}</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    ${ot.obs ? `<div class="doc-section">
+      <div class="doc-section-title">Observaciones / Garantía</div>
+      <div style="background:var(--fog);border-radius:6px;padding:12px;font-size:13px">${ot.obs}</div>
+    </div>` : ''}`;
+  }
+
+  html += `
+    <div class="doc-signature-row">
+      <div class="doc-signature">Firma del Cliente<br><br><br>${cliente?.nombre||'_______________________'}</div>
+      <div class="doc-signature">Firma Responsable del Taller<br><br><br>${taller}</div>
+    </div>
+  </div>`;
+
+  // Add photos to document if available
+  const otFotos = ot.fotos || [];
+  if (otFotos.length) {
+    html += `<div style="margin-top:16px">
+      <div style="font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#95a5a6;margin-bottom:8px;border-bottom:1px solid #ecf0f1;padding-bottom:4px">📷 FOTOGRAFÍAS</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px">
+        ${otFotos.map(f => `<img src="${f.data}" style="width:100%;height:90px;object-fit:cover;border-radius:6px;border:1px solid #dde3ea">`).join('')}
+      </div>
+    </div>`;
+  }
+  document.getElementById('doc-content').innerHTML = html;
+  document.getElementById('doc-result').style.display = 'block';
+  document.getElementById('doc-placeholder').style.display = 'none';
+
+  // Build plain text for sharing
+  lastDocText = buildPlainText(ot, cliente, equipo, tipo, taller, tallerTel, total);
+}
+
+function buildPlainText(ot, cliente, equipo, tipo, taller, tallerTel, total) {
+  const tipoLabel = tipo === 'ingreso' ? '📥 OT DE INGRESO' : tipo === 'diagnostico' ? '🔍 INFORME DE DIAGNÓSTICO' : '✅ INFORME FINAL DE ENTREGA';
+  let t = `${tipoLabel}\n🔧 ${taller}${tallerTel ? ' · ' + tallerTel : ''}\n`;
+  t += `━━━━━━━━━━━━━━━━━━━━━\n`;
+  t += `📋 N° OT: *${ot.id}*\n`;
+  t += `📅 Fecha: ${new Date().toLocaleDateString('es-PE')}\n`;
+  t += `👤 Cliente: ${cliente?.nombre||'—'}\n`;
+  if (cliente?.tel) t += `📞 Tel: ${cliente.tel}\n`;
+  t += `🚜 Equipo: ${equipo ? equipo.marca+' '+equipo.modelo : '—'}`;
+  if (equipo?.serie) t += ` (${equipo.serie})`;
+  t += `\n━━━━━━━━━━━━━━━━━━━━━\n`;
+
+  if (tipo === 'ingreso') {
+    t += `📝 *Trabajo Solicitado:*\n${ot.descripcion||'—'}\n`;
+    t += `\n📅 Ingreso: ${fmtDate(ot.fechaIng)}\n`;
+    t += `📅 Entrega estimada: ${fmtDate(ot.fechaEnt)||'Por confirmar'}\n`;
+  }
+  if (tipo === 'diagnostico') {
+    t += `🔍 *Diagnóstico:*\n${ot.diagnostico||'En proceso'}\n`;
+    if (ot.repuestos) t += `\n🔩 Repuestos requeridos:\n${ot.repuestos}\n`;
+    t += `\n💰 Presupuesto estimado: S/. ${formatMoney(total)}\n`;
+  }
+  if (tipo === 'entrega') {
+    t += `✅ *Trabajos realizados:*\n${ot.trabajos||ot.descripcion||'—'}\n`;
+    if (ot.repuestos) t += `\n🔩 Repuestos usados:\n${ot.repuestos}\n`;
+    t += `\n💰 *Total: S/. ${formatMoney(total)}*\n`;
+  }
+  t += `\n_Documento generado por ${taller}_`;
+  return t;
+}
+
+function shareWhatsApp() {
+  if (!lastDocText) return toast('Genera el documento primero', 'error');
+  const otId = document.getElementById('doc-ot-select').value;
+  const ot = DB.ots.find(x => x.id === otId);
+  const cliente = ot ? DB.clientes.find(x => x.id === ot.clienteId) : null;
+  const tel = cliente?.tel?.replace(/\D/g,'') || '';
+  const msg = encodeURIComponent(lastDocText);
+  const url = tel ? `https://wa.me/${tel}?text=${msg}` : `https://wa.me/?text=${msg}`;
+  window.open(url, '_blank');
+}
+
+function enviarWhatsAppOT(otId) {
+  const ot = DB.ots.find(x => x.id === otId);
+  if (!ot) return;
+  const cliente = DB.clientes.find(x => x.id === ot.clienteId);
+  const equipo  = DB.equipos.find(x => x.id === ot.equipoId);
+  const taller  = document.getElementById('doc-taller')?.value?.trim() || 'SERVIMAQ B&S Diesel';
+
+  const mensaje =
+    `*${taller} ⚙️*\n\n` +
+    `✅ *Nueva Orden de Trabajo*\n` +
+    `──────────────────────\n` +
+    `*OT N°:* ${ot.id}\n` +
+    `*Cliente:* ${cliente?.nombre || '—'}\n` +
+    `*Equipo:* ${equipo ? equipo.marca + ' ' + equipo.modelo : '—'}\n` +
+    `*Trabajo:* ${ot.descripcion || '—'}\n` +
+    `*Estado:* ${ot.estado}\n` +
+    `*Ingreso:* ${fmtDate(ot.fechaIng)}\n` +
+    `*Entrega est.:* ${fmtDate(ot.fechaEnt) || 'Por confirmar'}\n\n` +
+    `Le informaremos cuando tengamos el diagnóstico. 🔧`;
+
+  const tel = cliente?.tel?.replace(/\D/g,'') || '';
+  const url = tel
+    ? `https://wa.me/${tel}?text=${encodeURIComponent(mensaje)}`
+    : `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+  window.open(url, '_blank');
+}
+
+function copyText() {
+  if (!lastDocText) return toast('Genera el documento primero', 'error');
+  navigator.clipboard.writeText(lastDocText).then(() => toast('✅ Texto copiado al portapapeles'));
+}
+
+
+// UTILS
+
+function fmtDate(d) {
+  if (!d) return '';
+  const [y,m,day] = d.split('-');
+  return `${day}/${m}/${y}`;
+}
+function formatMoney(v) {
+  const n = parseFloat(v) || 0;
+  return n.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function toast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// CALENDARIO / CITAS
+
+DB.citas = JSON.parse(localStorage.getItem('tp_citas') || '[]');
+const _dbSave = DB.save.bind(DB);
+DB.save = function() {
+  _dbSave();
+  localStorage.setItem('tp_citas', JSON.stringify(this.citas));
+};
+
+let calFecha = new Date();
+let calDiaSeleccionado = null;
+
+function renderCalendario() {
+  const año   = calFecha.getFullYear();
+  const mes   = calFecha.getMonth();
+  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('cal-titulo').textContent = meses[mes] + ' ' + año;
+
+  const primerDia = new Date(año, mes, 1).getDay();
+  const diasMes   = new Date(año, mes + 1, 0).getDate();
+  const hoy = new Date();
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = '';
+
+  for (let i = 0; i < primerDia; i++) {
+    grid.innerHTML += '<div></div>';
+  }
+
+  for (let d = 1; d <= diasMes; d++) {
+    const fechaStr  = `${año}-${String(mes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const citasDia  = (DB.citas||[]).filter(c => c.fecha === fechaStr);
+    const n         = citasDia.length;
+    const esHoy     = hoy.getFullYear()===año && hoy.getMonth()===mes && hoy.getDate()===d;
+    const esSel     = calDiaSeleccionado === fechaStr;
+
+    // Color scheme: libre=green, 1 cita=orange, 2+ citas=red, hoy=navy, seleccionado=amber
+    let bg, border, color, shadow = 'none', fontW = '500';
+    if (esHoy) {
+      bg = '#1a2b4a'; color = 'white'; border = '2px solid #1a2b4a'; fontW = '700';
+    } else if (esSel) {
+      bg = '#f39c12'; color = 'white'; border = '2px solid #d68910'; fontW = '700';
+    } else if (n === 0) {
+      bg = '#d4f5e2'; color = '#1a6b3a'; border = '1.5px solid #a8e6c1';
+    } else if (n === 1) {
+      bg = '#fff0d4'; color = '#7a4500'; border = '1.5px solid #f5c07a'; shadow = '0 0 0 1.5px #f39c12';
+    } else {
+      bg = '#fde8e8'; color = '#7a1a1a'; border = '1.5px solid #f5a0a0'; shadow = '0 0 0 1.5px #e74c3c';
+    }
+
+    const badge = n > 0
+      ? `<div style="margin-top:3px;font-size:10px;font-weight:700;padding:1px 5px;border-radius:10px;display:inline-block;
+           background:${n>=2?'#e74c3c':n===1?'#f39c12':'transparent'};color:white">
+           ${n} cita${n>1?'s':''}
+         </div>`
+      : `<div style="margin-top:3px;font-size:9px;color:${esHoy||esSel?'rgba(255,255,255,0.7)':'#27ae60'}">libre</div>`;
+
+    grid.innerHTML += `<div onclick="selDia('${fechaStr}')"
+      style="background:${bg};color:${color};border:${border};border-radius:10px;
+             box-shadow:${shadow};padding:8px 4px 6px;text-align:center;cursor:pointer;
+             min-height:58px;transition:all 0.15s;font-weight:${fontW};font-size:15px;">
+      ${d}${badge}
+    </div>`;
+  }
+
+  // Leyenda - remove old first
+  const oldLegend = document.getElementById('cal-leyenda');
+  if (oldLegend) oldLegend.remove();
+  grid.insertAdjacentHTML('afterend', `
+    <div id='cal-leyenda' style="display:flex;gap:12px;margin-top:14px;flex-wrap:wrap;font-size:12px;font-weight:600">
+    <div style="display:flex;gap:12px;margin-top:14px;flex-wrap:wrap;font-size:12px;font-weight:600">
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:14px;border-radius:4px;background:#d4f5e2;border:1px solid #a8e6c1;display:inline-block"></span> Libre</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:14px;border-radius:4px;background:#fff0d4;border:1px solid #f5c07a;display:inline-block"></span> 1 cita</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:14px;border-radius:4px;background:#fde8e8;border:1px solid #f5a0a0;display:inline-block"></span> 2+ citas</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:14px;border-radius:4px;background:#1a2b4a;display:inline-block"></span> Hoy</span>
+    </div>
+  `);
+
+  if (calDiaSeleccionado) mostrarDetalleDia(calDiaSeleccionado);
+}
+
+function cambiarMes(delta) {
+  calFecha.setMonth(calFecha.getMonth() + delta);
+  calDiaSeleccionado = null;
+  document.getElementById('cal-detalle').style.display = 'none';
+  renderCalendario();
+}
+
+function selDia(fechaStr) {
+  calDiaSeleccionado = fechaStr;
+  renderCalendario();
+  mostrarDetalleDia(fechaStr);
+}
+
+function mostrarDetalleDia(fechaStr) {
+  const [y,m,d] = fechaStr.split('-');
+  const citas = DB.citas.filter(c => c.fecha === fechaStr).sort((a,b) => a.hora.localeCompare(b.hora));
+  const det = document.getElementById('cal-detalle');
+  const lista = document.getElementById('cal-detalle-lista');
+  document.getElementById('cal-detalle-fecha').textContent = `${d}/${m}/${y}`;
+  det.style.display = 'block';
+
+  if (!citas.length) {
+    lista.innerHTML = `<div style="text-align:center;padding:20px;color:var(--muted)">
+      Sin citas agendadas. <button class="btn btn-primary btn-sm" onclick="nuevaCitaFecha('${fechaStr}')">+ Agendar</button>
+    </div>`;
+    return;
+  }
+
+  lista.innerHTML = citas.map(c => {
+    const cliente = DB.clientes.find(x => x.id === c.clienteId);
+    const equipo  = DB.equipos.find(x => x.id === c.equipoId);
+    return `<div style="display:flex;align-items:center;gap:14px;padding:12px;border-radius:8px;background:var(--fog);margin-bottom:8px;border-left:4px solid var(--amber)">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--amber);min-width:50px">${c.hora}</div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:14px">${cliente?.nombre||'—'} · ${c.tipo}</div>
+        <div style="font-size:12px;color:var(--muted)">${equipo ? equipo.marca+' '+equipo.modelo : 'Sin equipo'} ${c.tecnico?'· '+c.tecnico:''}</div>
+        ${c.notas?`<div style="font-size:12px;color:var(--muted);margin-top:2px">📝 ${c.notas}</div>`:''}
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="editCita('${c.id}')">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteCita('${c.id}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join('') + `<div style="margin-top:10px">
+    <button class="btn btn-primary btn-sm" onclick="nuevaCitaFecha('${fechaStr}')">➕ Agregar otra cita este día</button>
+  </div>`;
+}
+
+function nuevaCitaFecha(fechaStr) {
+  if (!canCreateClienteEquipo()) { toast('Solo el Jefe de Taller o Admin pueden crear citas', 'error'); return; }
+  openModal('modal-cita');
+  setTimeout(() => { document.getElementById('cita-fecha').value = fechaStr; }, 50);
+}
+
+function saveCita() {
+  var _chkCitaId = document.getElementById('cita-edit-id') ? document.getElementById('cita-edit-id').value : '';
+  if (!_chkCitaId && !canCreateClienteEquipo()) { toast('Sin permiso para crear citas', 'error'); return; }
+  const clienteId = document.getElementById('cita-cliente').value;
+  const fecha     = document.getElementById('cita-fecha').value;
+  const hora      = document.getElementById('cita-hora').value;
+  if (!clienteId || !fecha || !hora) return toast('Cliente, fecha y hora son obligatorios', 'error');
+
+  const editId = document.getElementById('cita-edit-id').value;
+
+  // Check for same-day conflict
+  const citasMismoDia = DB.citas.filter(c => c.fecha === fecha && c.id !== editId);
+  if (citasMismoDia.length >= 1) {
+    const lista = citasMismoDia.map(c => {
+      const cl = DB.clientes.find(x=>x.id===c.clienteId);
+      return `- ${c.hora} · ${cl?.nombre||'—'} (${c.tipo})`;
+    }).join('\n');
+    const confirmar = confirm(
+      `⚠️ ADVERTENCIA: Ya hay ${citasMismoDia.length} cita(s) agendada(s) para el ${fmtDate(fecha)}:\n\n${lista}\n\n¿Deseas agendar igual en este día, o prefieres elegir otra fecha?\n\n[Aceptar] = Agendar mismo día\n[Cancelar] = Elegir otra fecha`
+    );
+    if (!confirmar) return;
+  }
+
+  if (editId) {
+    const c = DB.citas.find(x => x.id === editId);
+    Object.assign(c, getCitaForm());
+  } else {
+    const id = 'CIT-' + Date.now();
+    DB.citas.push({ id, ...getCitaForm() });
+  }
+  DB.save();
+  closeModal('modal-cita');
+  renderCalendario();
+  toast('✅ Cita guardada');
+  var _savedCita = DB.citas.find(function(x){ return x.id === (editId || DB.citas[DB.citas.length-1].id); });
+  if (_savedCita) cloudPushCita(_savedCita);
+}
+
+function getCitaForm() {
+  return {
+    clienteId: document.getElementById('cita-cliente').value,
+    equipoId:  document.getElementById('cita-equipo').value,
+    fecha:     document.getElementById('cita-fecha').value,
+    hora:      document.getElementById('cita-hora').value,
+    tipo:      document.getElementById('cita-tipo').value,
+    tecnico:   document.getElementById('cita-tecnico').value.trim(),
+    notas:     document.getElementById('cita-notas').value.trim(),
+  };
+}
+
+function editCita(id) {
+  const c = DB.citas.find(x => x.id === id);
+  document.getElementById('cita-edit-id').value = id;
+  populateClienteSelects();
+  document.getElementById('cita-cliente').value  = c.clienteId;
+  loadEquiposCita();
+  document.getElementById('cita-equipo').value   = c.equipoId || '';
+  document.getElementById('cita-fecha').value    = c.fecha;
+  document.getElementById('cita-hora').value     = c.hora;
+  document.getElementById('cita-tipo').value     = c.tipo;
+  document.getElementById('cita-tecnico').value  = c.tecnico || '';
+  document.getElementById('cita-notas').value    = c.notas || '';
+  openModal('modal-cita');
+}
+
+function deleteCita(id) {
+  if (!confirm('¿Eliminar esta cita?')) return;
+  DB.citas = DB.citas.filter(function(x){ return x.id !== id; });
+  DB.save();
+  renderCalendario();
+  toast('Cita eliminada');
+  cloudDelCita(id);
+}
+
+function loadEquiposCita() {
+  const clienteId = document.getElementById('cita-cliente').value;
+  const sel = document.getElementById('cita-equipo');
+  sel.innerHTML = '<option value="">— Sin equipo —</option>';
+  DB.equipos.filter(e => e.clienteId === clienteId).forEach(e => {
+    const opt = document.createElement('option');
+    opt.value = e.id;
+    opt.textContent = `${e.marca} ${e.modelo} (${e.tipo})`;
+    sel.appendChild(opt);
+  });
+}
+
+// Hook client change in cita modal
+document.addEventListener('DOMContentLoaded', function() {
+  var citaCli = document.getElementById('cita-cliente');
+  if (citaCli) citaCli.addEventListener('change', loadEquiposCita);
+});
+
+// Patch showPage to render calendar
+const _showPage = showPage;
+// Already defined below, so we patch exportarDatos to also save citas
+
+
+// HISTORIAL
+
+function renderHistorial() {
+  const search  = (document.getElementById('hist-search')?.value || '').toLowerCase();
+  const filter  = document.getElementById('hist-filter')?.value || 'todos';
+  const content = document.getElementById('hist-content');
+  if (!content) return;
+
+  let html = '';
+
+  if (filter === 'todos' || filter === 'clientes') {
+    let clientes = [...DB.clientes];
+    if (search) clientes = clientes.filter(c =>
+      c.nombre.toLowerCase().includes(search) ||
+      (c.tel||'').includes(search) ||
+      DB.ots.some(o => o.clienteId === c.id && (o.id.toLowerCase().includes(search) || (o.descripcion||'').toLowerCase().includes(search)))
+    );
+
+    if (clientes.length) {
+      html += `<div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--ink);margin-bottom:14px">👥 Por Cliente</div>`;
+      clientes.forEach(c => {
+        const ots    = DB.ots.filter(o => o.clienteId === c.id);
+        const citas  = (DB.citas||[]).filter(x => x.clienteId === c.id);
+        const equipos = DB.equipos.filter(e => e.clienteId === c.id);
+        const total  = ots.reduce((s,o) => s + (parseFloat(o.mo)||0) + (parseFloat(o.repCost)||0), 0);
+
+        html += `<div class="card" style="margin-bottom:16px">
+          
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid var(--mist)">
+            <div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--ink)">${c.nombre}</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:2px">${c.tel||''} ${c.ciudad?'· '+c.ciudad:''} ${c.ruc?'· RUC: '+c.ruc:''}</div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <div style="text-align:center;background:var(--fog);border-radius:8px;padding:8px 14px">
+                <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--ink)">${ots.length}</div>
+                <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase">OTs</div>
+              </div>
+              <div style="text-align:center;background:var(--fog);border-radius:8px;padding:8px 14px">
+                <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--ink)">${equipos.length}</div>
+                <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase">Equipos</div>
+              </div>
+              <div style="text-align:center;background:var(--fog);border-radius:8px;padding:8px 14px">
+                <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--go)">S/. ${total.toLocaleString('es-PE',{minimumFractionDigits:0})}</div>
+                <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase">Facturado</div>
+              </div>
+            </div>
+          </div>`;
+
+        // Equipos mini list
+        if (equipos.length) {
+          html += `<div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap">`;
+          equipos.forEach(e => {
+            const badge = e.estado==='Operativo'?'badge-done':e.estado==='En Taller'?'badge-progress':'badge-pending';
+            html += `<div style="background:var(--fog);border:1px solid var(--border);border-radius:7px;padding:6px 12px;font-size:12px">
+              <span style="font-weight:700">${e.marca} ${e.modelo}</span>
+              <span style="color:var(--muted)"> · ${e.tipo}</span>
+              <span class="badge ${badge}" style="margin-left:6px;font-size:10px">${e.estado}</span>
+            </div>`;
+          });
+          html += `</div>`;
+        }
+
+        // OTs timeline
+        if (ots.length) {
+          html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px">Órdenes de Trabajo</div>`;
+          const badgeMap = {'Pendiente':'badge-pending','En Proceso':'badge-progress','Listo':'badge-done','Entregado':'badge-delivered'};
+          ots.sort((a,b) => b.id.localeCompare(a.id)).forEach(ot => {
+            const eq = DB.equipos.find(e => e.id === ot.equipoId);
+            const tot = (parseFloat(ot.mo)||0)+(parseFloat(ot.repCost)||0);
+            html += `<div style="display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:8px;background:var(--fog);margin-bottom:6px;border-left:3px solid var(--amber)">
+              <div style="min-width:110px">
+                <div style="font-weight:700;font-size:13px">${ot.id}</div>
+                <div style="font-size:11px;color:var(--muted)">${fmtDate(ot.fechaIng)}</div>
+              </div>
+              <div style="flex:1">
+                <div style="font-size:13px;font-weight:500">${ot.descripcion ? ot.descripcion.substring(0,60)+(ot.descripcion.length>60?'...':'') : '—'}</div>
+                <div style="font-size:11px;color:var(--muted)">${eq ? eq.marca+' '+eq.modelo : '—'} · ${ot.tipo}</div>
+              </div>
+              <div style="text-align:right;min-width:90px">
+                <span class="badge ${badgeMap[ot.estado]||'badge-pending'}">${ot.estado}</span>
+                ${tot>0?`<div style="font-size:11px;font-weight:700;color:var(--go);margin-top:3px">S/. ${tot.toLocaleString('es-PE',{minimumFractionDigits:0})}</div>`:''}
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="quickDoc('${ot.id}')" title="Generar doc">📄</button>
+            </div>`;
+          });
+        } else {
+          html += `<div style="color:var(--muted);font-size:13px;padding:8px 0">Sin órdenes registradas.</div>`;
+        }
+
+        html += `</div>`;
+      });
+    }
+  }
+
+  if (filter === 'todos' || filter === 'equipos') {
+    let equipos = [...DB.equipos];
+    if (search) equipos = equipos.filter(e =>
+      (e.marca+' '+e.modelo).toLowerCase().includes(search) ||
+      (e.serie||'').toLowerCase().includes(search) ||
+      DB.ots.some(o => o.equipoId === e.id && o.id.toLowerCase().includes(search))
+    );
+
+    if (equipos.length) {
+      html += `<div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--ink);margin:20px 0 14px">🚜 Por Equipo</div>`;
+      equipos.forEach(e => {
+        const cliente = DB.clientes.find(c => c.id === e.clienteId);
+        const ots     = DB.ots.filter(o => o.equipoId === e.id);
+        const total   = ots.reduce((s,o) => s + (parseFloat(o.mo)||0) + (parseFloat(o.repCost)||0), 0);
+        const badgeEq = e.estado==='Operativo'?'badge-done':e.estado==='En Taller'?'badge-progress':'badge-pending';
+        const badgeMap = {'Pendiente':'badge-pending','En Proceso':'badge-progress','Listo':'badge-done','Entregado':'badge-delivered'};
+
+        html += `<div class="card" style="margin-bottom:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--mist)">
+            <div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--ink)">
+                ${e.marca} ${e.modelo} <span style="color:var(--muted);font-size:15px">· ${e.tipo}</span>
+              </div>
+              <div style="font-size:12px;color:var(--muted);margin-top:2px">
+                ${e.serie?'Serie: '+e.serie+' · ':''}${e.año?e.año+' · ':''}${e.horometro?e.horometro:''}
+                ${cliente?' · Dueño: <b>'+cliente.nombre+'</b>':''}
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <span class="badge ${badgeEq}">${e.estado}</span>
+              ${ots.length?`<div style="text-align:center;background:var(--fog);border-radius:8px;padding:6px 12px">
+                <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--go)">S/. ${total.toLocaleString('es-PE',{minimumFractionDigits:0})}</div>
+                <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase">Total invertido</div>
+              </div>`:''}
+            </div>
+          </div>`;
+
+        if (ots.length) {
+          ots.sort((a,b) => b.id.localeCompare(a.id)).forEach(ot => {
+            const tot = (parseFloat(ot.mo)||0)+(parseFloat(ot.repCost)||0);
+            html += `<div style="display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:8px;background:var(--fog);margin-bottom:6px;border-left:3px solid var(--sky)">
+              <div style="min-width:110px">
+                <div style="font-weight:700;font-size:13px">${ot.id}</div>
+                <div style="font-size:11px;color:var(--muted)">${fmtDate(ot.fechaIng)}</div>
+              </div>
+              <div style="flex:1">
+                <div style="font-size:13px">${ot.descripcion ? ot.descripcion.substring(0,60)+(ot.descripcion.length>60?'...':'') : '—'}</div>
+                <div style="font-size:11px;color:var(--muted)">${ot.tipo}${ot.tecnico?' · '+ot.tecnico:''}</div>
+              </div>
+              <div style="text-align:right;min-width:90px">
+                <span class="badge ${badgeMap[ot.estado]||'badge-pending'}">${ot.estado}</span>
+                ${tot>0?`<div style="font-size:11px;font-weight:700;color:var(--go);margin-top:3px">S/. ${tot.toLocaleString('es-PE',{minimumFractionDigits:0})}</div>`:''}
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="quickDoc('${ot.id}')" title="Generar doc">📄</button>
+            </div>`;
+          });
+        } else {
+          html += `<div style="color:var(--muted);font-size:13px;padding:8px 0">Sin órdenes registradas para este equipo.</div>`;
+        }
+        html += `</div>`;
+      });
+    }
+  }
+
+  if (!html) {
+    content.innerHTML = `<div class="card" style="text-align:center;padding:40px;color:var(--muted)">
+      <div style="font-size:48px;margin-bottom:12px">🕐</div>
+      <div style="font-size:15px;font-weight:500">No hay registros aún.<br>Agrega clientes, equipos y órdenes de trabajo.</div>
+    </div>`;
+    return;
+  }
+  content.innerHTML = html;
+}
+
+
+// EXPORTAR / IMPORTAR
+
+
+// TÉCNICOS
+DB.tecnicos = JSON.parse(localStorage.getItem('tp_tecnicos') || '[]');
+
+function saveTecnicoData() {
+  localStorage.setItem('tp_tecnicos', JSON.stringify(DB.tecnicos));
+}
+
+function saveTecnico() {
+  var nombre = document.getElementById('tec-nombre').value.trim();
+  var tel    = document.getElementById('tec-tel').value.trim();
+  if (!nombre || !tel) { toast('Nombre y teléfono son obligatorios'); return; }
+  var pin = document.getElementById('tec-pin').value.trim();
+  if (pin && (pin.length !== 4 || !/^\d{4}$/.test(pin))) {
+    toast('El PIN debe ser exactamente 4 dígitos'); return;
+  }
+  var editId = document.getElementById('tec-edit-id').value;
+  var data = {
+    nombre: nombre,
+    tel:    tel,
+    especialidad: document.getElementById('tec-especialidad').value,
+    nivel:        document.getElementById('tec-nivel').value,
+    color:        document.getElementById('tec-color').value,
+    notas:        document.getElementById('tec-notas').value.trim(),
+    pin:          pin || null,
+    permisos: {
+      'ver-ots':      document.getElementById('perm-ver-ots').checked,
+      'crear-ots':    document.getElementById('perm-crear-ots').checked,
+      'editar-ots':   document.getElementById('perm-editar-ots').checked,
+      'ver-clientes': document.getElementById('perm-ver-clientes').checked,
+      'ver-reportes': document.getElementById('perm-ver-reportes').checked,
+    }
+  };
+  if (editId) {
+    var t = DB.tecnicos.find(function(x){ return x.id === editId; });
+    Object.assign(t, data);
+  } else {
+    var maxN = DB.tecnicos.reduce(function(mx,t2){
+      var n=parseInt((t2.id||'').split('-')[1]||0); return n>mx?n:mx; },0);
+    var id = 'T-' + String(maxN+1).padStart(3,'0');
+    DB.tecnicos.push(Object.assign({id:id}, data));
+  }
+  saveTecnicoData();
+  closeModal('modal-tecnico');
+  renderTecnicos();
+  populateTecnicoSelects();
+  document.getElementById('tec-edit-id').value = '';
+  toast('Técnico guardado');
+  var _savedId = document.getElementById('tec-edit-id').value || DB.tecnicos[DB.tecnicos.length-1].id;
+  var _savedTec = DB.tecnicos.find(function(x){ return x.id === _savedId; });
+  if (_savedTec) cloudPushTecnico(_savedTec);
+}
+
+function renderTecnicos() {
+  const grid = document.getElementById('grid-tecnicos');
+  if (!grid) return;
+  if (!DB.tecnicos.length) {
+    grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);grid-column:1/-1">Sin técnicos registrados aún.</div>';
+    return;
+  }
+  let html = '';
+  DB.tecnicos.forEach(function(t) {
+    const ots     = DB.ots.filter(function(o){ return o.tecnico === t.nombre; });
+    const activas = ots.filter(function(o){ return o.estado === 'Pendiente' || o.estado === 'En Proceso'; }).length;
+    const ini     = t.nombre.split(' ').map(function(w){ return w[0]; }).join('').substring(0,2).toUpperCase();
+    html += '<div style="background:white;border-radius:10px;box-shadow:var(--shadow);padding:20px;text-align:center;border-top:4px solid ' + t.color + '">';
+    html += '<div style="width:52px;height:52px;border-radius:50%;background:' + t.color + ';display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:white;margin:0 auto 10px">' + ini + '</div>';
+    html += '<div style="font-weight:800;font-size:15px;color:var(--ink)">' + t.nombre + '</div>';
+    html += '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + t.especialidad + '</div>';
+    html += '<div style="font-size:12px;color:var(--muted)">' + t.tel + '</div>';
+    html += '<div style="display:flex;justify-content:center;gap:16px;margin:12px 0">';
+    html += '<div><div style="font-size:22px;font-weight:800;color:var(--ink)">' + activas + '</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase">Activas</div></div>';
+    html += '<div><div style="font-size:22px;font-weight:800;color:var(--ink)">' + ots.length + '</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase">Total OTs</div></div>';
+    html += '</div>';
+    html += '<div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">';
+    html += '<button class="btn btn-ghost btn-sm" onclick="editTecnico(\'' + t.id + '\')">✏️</button>';
+    html += '<button class="btn btn-sm" style="background:#25D366;color:white" onclick="notificarTecnico(\'' + t.id + '\')">📲 OTs</button>';
+    html += '<button class="btn btn-danger btn-sm" onclick="deleteTecnico(\'' + t.id + '\')">🗑️</button>';
+    html += '</div></div>';
+  });
+  html += '<div onclick="openModal(\'modal-tecnico\')" style="background:white;border-radius:10px;box-shadow:var(--shadow);padding:20px;text-align:center;border:2px dashed var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;min-height:180px;flex-direction:column;gap:8px;color:var(--muted)">';
+  html += '<div style="font-size:32px">➕</div><div style="font-size:13px;font-weight:600">Agregar Técnico</div></div>';
+  grid.innerHTML = html;
+}
+
+function editTecnico(id) {
+  const t = DB.tecnicos.find(x => x.id === id);
+  if (!t) return;
+  document.getElementById('tec-edit-id').value        = id;
+  document.getElementById('tec-nombre').value         = t.nombre;
+  document.getElementById('tec-tel').value            = t.tel;
+  document.getElementById('tec-especialidad').value   = t.especialidad;
+  document.getElementById('tec-color').value          = t.color || '#3498db';
+  document.getElementById('tec-notas').value          = t.notas || '';
+  openModal('modal-tecnico');
+}
+
+function deleteTecnico(id) {
+  if (!confirm('¿Eliminar este técnico?')) return;
+  DB.tecnicos = DB.tecnicos.filter(x => x.id !== id);
+  saveTecnicoData();
+  renderTecnicos();
+  populateTecnicoSelects();
+  toast('Técnico eliminado');
+}
+
+function populateTecnicoSelects() {
+  const sel = document.getElementById('ot-tecnico-sel');
+  if (!sel) return;
+  const cur = document.getElementById('ot-tecnico').value;
+  sel.innerHTML = '<option value="">— Selecciona técnico —</option>';
+  DB.tecnicos.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t.nombre;
+    opt.textContent = t.nombre + ' · ' + t.especialidad;
+    sel.appendChild(opt);
+  });
+  if (cur) sel.value = cur;
+}
+
+function fillTecnicoNombre() {
+  const sel = document.getElementById('ot-tecnico-sel');
+  if (sel) document.getElementById('ot-tecnico').value = sel.value;
+}
+
+function notificarTecnico(tecId) {
+  var tec = DB.tecnicos.find(function(x){ return x.id === tecId; });
+  if (!tec) return;
+  var ots = DB.ots.filter(function(o){
+    return o.tecnico === tec.nombre && (o.estado === 'Pendiente' || o.estado === 'En Proceso');
+  });
+  if (!ots.length) { toast('No tiene OTs pendientes asignadas'); return; }
+  var taller = 'SERVIMAQ B&S Diesel';
+  var msg = '\u{1F527} *' + taller + '*\n\n';
+  msg += 'Hola *' + tec.nombre + '*, tus órdenes asignadas:\n\n';
+  ots.forEach(function(ot, i) {
+    var cliente = DB.clientes.find(function(c){ return c.id === ot.clienteId; });
+    var equipo  = DB.equipos.find(function(e){ return e.id === ot.equipoId; });
+    msg += '*' + (i+1) + '. ' + ot.id + '*\n';
+    msg += '\u{1F464} ' + (cliente ? cliente.nombre : '—') + '\n';
+    msg += '\u{1F69C} ' + (equipo ? equipo.marca + ' ' + equipo.modelo : '—') + '\n';
+    msg += '\u{1F527} ' + (ot.descripcion || '—') + '\n';
+    msg += '\u{1F4C5} Entrega: ' + (ot.fechaEnt ? fmtDate(ot.fechaEnt) : 'Por confirmar') + '\n';
+    msg += '\u{1F4CC} ' + ot.estado + '\n\n';
+  });
+  msg += '_Confirma recibido. — ' + taller + '_';
+  var tel = tec.tel.replace(/[^0-9]/g, '');
+  window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(msg), '_blank');
+}
+
+function enviarOTATecnico(otId) {
+  var ot = DB.ots.find(function(x){ return x.id === otId; });
+  if (!ot || !ot.tecnico) { toast('Esta OT no tiene técnico asignado'); return; }
+  var tec = DB.tecnicos.find(function(t){ return t.nombre === ot.tecnico; });
+  if (!tec) { toast('Técnico no encontrado en registros'); return; }
+  var cliente = DB.clientes.find(function(c){ return c.id === ot.clienteId; });
+  var equipo  = DB.equipos.find(function(e){ return e.id === ot.equipoId; });
+  var taller  = 'SERVIMAQ B&S Diesel';
+  var msg = '\u{1F527} *' + taller + '*\n\n';
+  msg += 'Hola *' + tec.nombre + '*, se te asignó esta OT:\n\n';
+  msg += '\u{1F4CB} *N° OT:* ' + ot.id + '\n';
+  msg += '\u{1F464} *Cliente:* ' + (cliente ? cliente.nombre : '—') + '\n';
+  msg += '\u{1F69C} *Equipo:* ' + (equipo ? equipo.marca + ' ' + equipo.modelo + ' (' + equipo.tipo + ')' : '—') + '\n';
+  msg += '\u{1F527} *Trabajo:* ' + (ot.descripcion || '—') + '\n';
+  msg += '\u{1F4C5} *Ingreso:* ' + fmtDate(ot.fechaIng) + '\n';
+  msg += '\u{1F4C5} *Entrega:* ' + (ot.fechaEnt ? fmtDate(ot.fechaEnt) : 'Por confirmar') + '\n';
+  msg += '\u{1F4CC} *Estado:* ' + ot.estado + '\n';
+  if (ot.obs) msg += '\u{1F4AC} *Obs:* ' + ot.obs + '\n';
+  msg += '\n_Confirma recibido. — ' + taller + '_';
+  var tel = tec.tel.replace(/[^0-9]/g, '');
+  window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(msg), '_blank');
+}
+
+
+// REPORTES
+var repPeriod = 'mes';
+
+function setRepPeriod(p, btn) {
+  repPeriod = p;
+  document.querySelectorAll('.rep-tab').forEach(function(b){ b.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  renderReportes();
+}
+
+function getRepOTs() {
+  var now = new Date();
+  var yr  = now.getFullYear();
+  var mo  = now.getMonth();
+  return DB.ots.filter(function(ot) {
+    if (!ot.fechaIng) return repPeriod === 'todo';
+    var d = new Date(ot.fechaIng);
+    if (repPeriod === 'mes')       return d.getFullYear()===yr && d.getMonth()===mo;
+    if (repPeriod === 'trimestre') return (now - d) <= 90*24*3600*1000;
+    if (repPeriod === 'anio')      return d.getFullYear()===yr;
+    return true;
+  });
+}
+
+function mkRepStat(icon, val, label, sub, color) {
+  return '<div class="rep-stat" style="border-left-color:' + color + '">' +
+    '<div style="font-size:20px;margin-bottom:3px">' + icon + '</div>' +
+    '<div class="rep-stat-val" style="color:' + color + '">' + val + '</div>' +
+    '<div class="rep-stat-label">' + label + '</div>' +
+    (sub ? '<div class="rep-stat-sub">' + sub + '</div>' : '') +
+    '</div>';
+}
+
+function mkIncomeBlock(label, val, color) {
+  return '<div style="text-align:center">' +
+    '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:4px">' + label + '</div>' +
+    '<div style="font-size:20px;font-weight:800;color:' + color + '">S/. ' + Math.round(val).toLocaleString('es-PE') + '</div>' +
+    '</div>';
+}
+
+function renderReportes() {
+  var el = document.getElementById('rep-content');
+  if (!el) return;
+
+  var ots        = getRepOTs();
+  var entregadas = ots.filter(function(o){ return o.estado === 'Entregado'; });
+  var enProceso  = ots.filter(function(o){ return o.estado === 'En Proceso'; });
+  var pendListas = ots.filter(function(o){ return o.estado === 'Pendiente' || o.estado === 'Listo'; });
+  var totalIng   = ots.reduce(function(s,o){ return s + (parseFloat(o.mo)||0) + (parseFloat(o.repCost)||0); }, 0);
+  var totalMO    = ots.reduce(function(s,o){ return s + (parseFloat(o.mo)||0); }, 0);
+  var totalRep   = ots.reduce(function(s,o){ return s + (parseFloat(o.repCost)||0); }, 0);
+  var tasa       = ots.length ? Math.round(entregadas.length / ots.length * 100) : 0;
+  var tiempos    = entregadas.filter(function(o){ return o.fechaIng && o.fechaEnt; }).map(function(o){
+    return Math.max(1, Math.round((new Date(o.fechaEnt) - new Date(o.fechaIng)) / 86400000));
+  });
+  var avgDias    = tiempos.length ? Math.round(tiempos.reduce(function(a,b){return a+b;},0)/tiempos.length) : 0;
+  var avgTicket  = ots.length ? Math.round(totalIng / ots.length) : 0;
+  var pLabel     = repPeriod==='mes'?'Este mes':repPeriod==='trimestre'?'Últimos 3 meses':repPeriod==='anio'?'Este año':'Histórico';
+
+  // Build tecnico stats
+  var tecMap = {};
+  DB.tecnicos.forEach(function(t){
+    tecMap[t.nombre] = { nombre:t.nombre, color:t.color||'#95a5a6', total:0, entregadas:0, ingresos:0, dias:[] };
+  });
+  ots.forEach(function(o){
+    if (!o.tecnico) return;
+    if (!tecMap[o.tecnico]) tecMap[o.tecnico] = { nombre:o.tecnico, color:'#95a5a6', total:0, entregadas:0, ingresos:0, dias:[] };
+    var t = tecMap[o.tecnico];
+    t.total++;
+    t.ingresos += (parseFloat(o.mo)||0) + (parseFloat(o.repCost)||0);
+    if (o.estado === 'Entregado') {
+      t.entregadas++;
+      if (o.fechaIng && o.fechaEnt)
+        t.dias.push(Math.max(1, Math.round((new Date(o.fechaEnt)-new Date(o.fechaIng))/86400000)));
+    }
+  });
+  var tecList = Object.values(tecMap).filter(function(t){ return t.total > 0; })
+    .sort(function(a,b){ return b.entregadas - a.entregadas; });
+  var maxEnt = tecList.length ? Math.max(1, tecList[0].entregadas) : 1;
+
+  // Equipos top
+  var eqMap = {};
+  ots.forEach(function(o){
+    var eq  = DB.equipos.find(function(e){ return e.id === o.equipoId; });
+    var key = eq ? eq.marca + ' ' + eq.modelo : 'Sin equipo';
+    eqMap[key] = (eqMap[key]||0) + 1;
+  });
+  var topEq  = Object.entries(eqMap).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
+  var maxEq  = topEq.length ? topEq[0][1] : 1;
+
+  if (!ots.length) {
+    el.innerHTML = '<div class="card" style="text-align:center;padding:50px;color:var(--muted)">' +
+      '<div style="font-size:48px;margin-bottom:12px">📊</div>' +
+      '<div style="font-size:14px">No hay datos para el período seleccionado.</div></div>';
+    return;
+  }
+
+  var h = '';
+
+  // KPIs
+  h += '<div class="rep-section">⚡ Indicadores — ' + pLabel + '</div>';
+  h += '<div class="rep-grid">';
+  h += mkRepStat('📋', ots.length,          'Total OTs',       '',                    '#1a2b4a');
+  h += mkRepStat('✅', entregadas.length,    'Entregadas',      tasa + '% completado', '#27ae60');
+  h += mkRepStat('⚙️', enProceso.length,    'En Proceso',      '',                    '#3498db');
+  h += mkRepStat('⏳', pendListas.length,    'Pend. / Listas',  '',                    '#f39c12');
+  h += mkRepStat('⏱️', avgDias ? avgDias + 'd' : '—', 'Días Prom.', 'para completar', '#8e44ad');
+  h += mkRepStat('📈', tasa + '%', 'Efectividad', tasa>=70?'Excelente':tasa>=40?'Regular':'Bajo', tasa>=70?'#27ae60':tasa>=40?'#f39c12':'#e74c3c');
+  h += '</div>';
+
+  // Ingresos
+  h += '<div class="rep-section">💰 Ingresos</div>';
+  h += '<div class="card" style="margin-bottom:18px">';
+  h += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:14px">';
+  h += mkIncomeBlock('Total', totalIng, '#27ae60');
+  h += mkIncomeBlock('Mano de Obra', totalMO, '#3498db');
+  h += mkIncomeBlock('Repuestos', totalRep, '#f39c12');
+  h += '</div>';
+  if (totalIng > 0) {
+    var pctMO  = Math.round(totalMO  / totalIng * 100);
+    var pctRep = Math.round(totalRep / totalIng * 100);
+    h += '<div style="font-size:11px;display:flex;justify-content:space-between;color:var(--muted);margin-bottom:4px"><span>Mano de obra ' + pctMO + '%</span><span>Repuestos ' + pctRep + '%</span></div>';
+    h += '<div style="display:flex;height:10px;border-radius:5px;overflow:hidden">';
+    h += '<div style="background:#3498db;width:' + pctMO + '%"></div>';
+    h += '<div style="background:#f39c12;flex:1"></div></div>';
+  }
+  h += '<div style="margin-top:10px;font-size:12px;color:var(--muted)">Ticket promedio: <strong style="color:var(--ink)">S/. ' + avgTicket.toLocaleString('es-PE') + '</strong></div>';
+  h += '</div>';
+
+  // Técnicos productividad
+  if (tecList.length) {
+    h += '<div class="rep-section">👷 Productividad por Técnico</div>';
+    h += '<div class="card" style="margin-bottom:18px">';
+    h += '<div style="display:grid;grid-template-columns:1fr 60px 80px 100px 70px;gap:8px;padding:6px 0;border-bottom:2px solid var(--mist);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted)">';
+    h += '<div>Técnico</div><div style="text-align:center">OTs</div><div style="text-align:center">Entregadas</div><div style="text-align:center">Ingresos</div><div style="text-align:center">Eficien.</div></div>';
+    tecList.forEach(function(t) {
+      var efic   = t.total ? Math.round(t.entregadas / t.total * 100) : 0;
+      var avgT   = t.dias.length ? Math.round(t.dias.reduce(function(a,b){return a+b;},0)/t.dias.length) : null;
+      var ec     = efic>=80?'#27ae60':efic>=50?'#f39c12':'#e74c3c';
+      var ini    = t.nombre.split(' ').map(function(w){return w[0];}).join('').substring(0,2).toUpperCase();
+      h += '<div style="display:grid;grid-template-columns:1fr 60px 80px 100px 70px;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)">';
+      h += '<div style="display:flex;align-items:center;gap:8px">';
+      h += '<div style="width:30px;height:30px;border-radius:50%;background:' + t.color + ';display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:white;flex-shrink:0">' + ini + '</div>';
+      h += '<div><div style="font-weight:700;font-size:12px">' + t.nombre + '</div>';
+      if (avgT) h += '<div style="font-size:10px;color:var(--muted)">&#x23F1; ' + avgT + ' días prom.</div>';
+      h += '</div></div>';
+      h += '<div style="text-align:center;font-weight:800;font-size:15px">' + t.total + '</div>';
+      h += '<div style="text-align:center;font-weight:800;font-size:15px;color:#27ae60">' + t.entregadas + '</div>';
+      h += '<div style="text-align:center;font-size:12px;font-weight:700;color:#27ae60">S/. ' + Math.round(t.ingresos).toLocaleString('es-PE') + '</div>';
+      h += '<div style="text-align:center"><span style="background:' + ec + '20;color:' + ec + ';font-weight:800;font-size:11px;padding:2px 7px;border-radius:10px">' + efic + '%</span></div>';
+      h += '</div>';
+    });
+    h += '</div>';
+
+    // Bar chart
+    h += '<div class="card" style="margin-bottom:18px">';
+    h += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:12px">OTs Entregadas por Técnico</div>';
+    tecList.forEach(function(t) {
+      var pct = maxEnt ? Math.round(t.entregadas / maxEnt * 100) : 0;
+      var ini = t.nombre.split(' ').map(function(w){return w[0];}).join('').substring(0,2).toUpperCase();
+      h += '<div class="tec-row">';
+      h += '<div style="width:26px;height:26px;border-radius:50%;background:' + t.color + ';display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:white">' + ini + '</div>';
+      h += '<div style="min-width:80px;font-size:12px;font-weight:600">' + t.nombre.split(' ')[0] + '</div>';
+      h += '<div class="bar-wrap"><div class="bar-fill" style="background:' + t.color + ';width:' + pct + '%"></div></div>';
+      h += '<div style="min-width:28px;text-align:right;font-weight:800;font-size:14px">' + t.entregadas + '</div>';
+      h += '</div>';
+    });
+    h += '</div>';
+  }
+
+  // Top equipos
+  if (topEq.length) {
+    h += '<div class="rep-section">&#x1F69C; Equipos más Atendidos</div>';
+    h += '<div class="card" style="margin-bottom:18px">';
+    topEq.forEach(function(pair, i) {
+      var pct = Math.round(pair[1] / maxEq * 100);
+      h += '<div class="tec-row">';
+      h += '<div style="width:22px;height:22px;border-radius:50%;background:var(--ink);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:white">' + (i+1) + '</div>';
+      h += '<div style="min-width:140px;font-size:12px;font-weight:600">' + pair[0] + '</div>';
+      h += '<div class="bar-wrap"><div class="bar-fill" style="background:var(--amber);width:' + pct + '%"></div></div>';
+      h += '<div style="min-width:36px;text-align:right;font-size:12px;font-weight:700">' + pair[1] + ' OTs</div>';
+      h += '</div>';
+    });
+    h += '</div>';
+  }
+
+  el.innerHTML = h;
+}
+
+
+// ══════════ SESIÓN ACTIVA ══════════
+var currentSession = null; // null = admin (dueño), objeto = técnico logueado
+
+var ADMIN_PIN = localStorage.getItem('admin_pin') || '0000';
+var ADMIN_EMAIL = localStorage.getItem('admin_email') || '';
+
+function isAdmin() { return currentSession === null; }
+
+function canDo(perm) {
+  if (isAdmin()) return true;
+  return currentSession.permisos && currentSession.permisos[perm];
+}
+
+// ── Mostrar pantalla de login ──
+function showLoginScreen() {
+  var el = document.getElementById('screen-login');
+  el.classList.add('active');
+  document.getElementById('login-step1').style.display = 'block';
+  document.getElementById('login-step2').classList.remove('active');
+  buildUserList();
+  // Request update from Supabase when login screen opens
+  if (cloudEnabled && supa) {
+    var bar = document.getElementById('login-sync-bar');
+    if (bar) bar.style.display = 'block';
+    syncAll().then(function() {
+      buildUserList(); // rebuild with fresh tecnicos from cloud
+      if (bar) bar.style.display = 'none';
+    }).catch(function() {
+      if (bar) bar.style.display = 'none';
+    });
+  }
+}
+
+function hideLoginScreen() {
+  document.getElementById('screen-login').classList.remove('active');
+}
+
+function buildUserList() {
+  var sel = document.getElementById('login-user-select');
+  if (!sel) return;
+  var html = '<option value="">— Elige tu usuario —</option>';
+  html += '<option value="__admin__">👑 Administrador</option>';
+  var tecs = DB.tecnicos.filter(function(t){ return t.pin; });
+  if (tecs.length === 0) {
+    html += '<option disabled style="color:#aaa">— Sin técnicos registrados —</option>';
+  } else {
+    tecs.forEach(function(t) {
+      var nivel = t.nivel || 'Junior';
+      var icon  = nivel === 'Jefe' ? '⭐' : '👷';
+      html += '<option value="' + t.id + '">' + icon + ' ' + t.nombre + ' — ' + (t.especialidad||nivel) + '</option>';
+    });
+  }
+  sel.innerHTML = html;
+  sel.value = '';
+}
+
+function onLoginUserSelect(id) {
+  if (!id) return;
+  selectLoginUser(id);
+}
+
+var _loginSelectedId = null;
+var _pinBuffer = '';
+
+function selectLoginUser(id) {
+  _loginSelectedId = id;
+  _pinBuffer = '';
+  updatePinDots();
+  document.getElementById('pin-error').textContent = '';
+  var name = id === '__admin__' ? 'Administrador' :
+    (DB.tecnicos.find(function(t){return t.id===id;})||{}).nombre || id;
+  document.getElementById('pin-label-name').textContent = 'PIN de: ' + name;
+  document.getElementById('login-step1').style.display = 'none';
+  document.getElementById('login-step2').classList.add('active');
+}
+
+function pinPress(digit) {
+  if (_pinBuffer.length >= 4) return;
+  _pinBuffer += digit;
+  updatePinDots();
+  if (_pinBuffer.length === 4) {
+    setTimeout(checkPin, 150);
+  }
+}
+
+function pinDel() {
+  _pinBuffer = _pinBuffer.slice(0, -1);
+  updatePinDots();
+  document.getElementById('pin-error').textContent = '';
+}
+
+function updatePinDots() {
+  for (var i = 0; i < 4; i++) {
+    var dot = document.getElementById('pd' + i);
+    if (dot) dot.classList.toggle('filled', i < _pinBuffer.length);
+  }
+}
+
+function checkPin() {
+  var correctPin;
+  var tec = null;
+  if (_loginSelectedId === '__admin__') {
+    correctPin = ADMIN_PIN;
+  } else {
+    tec = DB.tecnicos.find(function(t){return t.id === _loginSelectedId;});
+    correctPin = tec ? tec.pin : null;
+  }
+  if (_pinBuffer === correctPin) {
+    // Login correcto
+    if (_loginSelectedId === '__admin__') {
+      currentSession = null;
+    } else {
+      currentSession = tec;
+    }
+    hideLoginScreen();
+    applySessionUI();
+    showPage('dashboard');
+    toast('✅ Bienvenido ' + (_loginSelectedId === '__admin__' ? 'Administrador' : tec.nombre));
+    syncAll(); // pull latest data from Supabase after login
+  } else {
+    document.getElementById('pin-error').textContent = '❌ PIN incorrecto';
+    _pinBuffer = '';
+    updatePinDots();
+  }
+}
+
+function loginBack() {
+  _pinBuffer = '';
+  updatePinDots();
+  document.getElementById('login-step1').style.display = 'block';
+  document.getElementById('login-step2').classList.remove('active');
+  document.getElementById('pin-error').textContent = '';
+}
+
+function openUserMenu() {
+  // Populate modal
+  var name  = isAdmin() ? 'Administrador' : currentSession.nombre;
+  var role  = isAdmin() ? 'Dueño del taller' : (currentSession.nivel || 'Técnico');
+  var color = isAdmin() ? '#f39c12' : (currentSession.color || '#3498db');
+  var ini   = isAdmin() ? 'AD' : name.split(' ').map(function(w){return w[0];}).join('').substring(0,2).toUpperCase();
+  document.getElementById('umenu-avatar').textContent  = ini;
+  document.getElementById('umenu-avatar').style.background = color;
+  document.getElementById('umenu-name').textContent  = name;
+  document.getElementById('umenu-role').textContent  = role;
+  document.getElementById('umenu-admin-opts').style.display = isAdmin() ? 'block' : 'none';
+  openModal('modal-user-menu');
+}
+
+function cambiarUsuario() {
+  currentSession = null;
+  showLoginScreen();
+}
+
+function cerrarSesion() {
+  currentSession = null;
+  showLoginScreen();
+}
+
+function openAdminConfig() {
+  document.getElementById('admin-pin-actual').value  = '';
+  document.getElementById('admin-pin-nuevo').value   = '';
+  document.getElementById('admin-pin-confirm').value = '';
+  document.getElementById('admin-email-input').value = ADMIN_EMAIL;
+  openModal('modal-admin-config');
+}
+
+function cambiarPinAdmin() {
+  var actual  = document.getElementById('admin-pin-actual').value.trim();
+  var nuevo   = document.getElementById('admin-pin-nuevo').value.trim();
+  var confirm2 = document.getElementById('admin-pin-confirm').value.trim();
+  if (actual !== ADMIN_PIN) { toast('PIN actual incorrecto', 'error'); return; }
+  if (!/^\d{4}$/.test(nuevo)) { toast('El nuevo PIN debe ser 4 dígitos numéricos', 'error'); return; }
+  if (nuevo !== confirm2) { toast('Los PINs no coinciden', 'error'); return; }
+  ADMIN_PIN = nuevo;
+  localStorage.setItem('admin_pin', nuevo);
+  toast('✅ PIN de administrador actualizado');
+  document.getElementById('admin-pin-actual').value  = '';
+  document.getElementById('admin-pin-nuevo').value   = '';
+  document.getElementById('admin-pin-confirm').value = '';
+}
+
+function guardarEmailAdmin() {
+  var email = document.getElementById('admin-email-input').value.trim();
+  if (email && !/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
+    toast('Ingresa un correo válido', 'error'); return;
+  }
+  ADMIN_EMAIL = email;
+  localStorage.setItem('admin_email', email);
+  toast('✅ Correo guardado');
+}
+
+function openRecovery() {
+  var infoDiv = document.getElementById('recuperar-admin-info');
+  var emailTxt = document.getElementById('recuperar-email-txt');
+  if (ADMIN_EMAIL) {
+    infoDiv.style.display = 'block';
+    emailTxt.textContent  = '📧 ' + ADMIN_EMAIL;
+  } else {
+    infoDiv.style.display = 'none';
+  }
+  openModal('modal-recuperar');
+}
+
+function applySessionUI() {
+  var pill = document.getElementById('topbar-user-pill');
+  var avatarEl = document.getElementById('topbar-avatar-el');
+  var unameEl  = document.getElementById('topbar-uname-el');
+  var roleEl   = document.getElementById('topbar-role-el');
+  if (pill) pill.style.display = 'flex';
+  if (isAdmin()) {
+    if (avatarEl) { avatarEl.textContent = 'AD'; avatarEl.style.background = '#f39c12'; }
+    if (unameEl)  unameEl.textContent  = 'Administrador';
+    if (roleEl)   roleEl.textContent   = 'Dueño del taller';
+  } else {
+    var t = currentSession;
+    var ini = t.nombre.split(' ').map(function(w){return w[0];}).join('').substring(0,2).toUpperCase();
+    if (avatarEl) { avatarEl.textContent = ini; avatarEl.style.background = t.color||'#3498db'; }
+    if (unameEl)  unameEl.textContent  = t.nombre;
+    if (roleEl)   roleEl.textContent   = t.nivel || 'Técnico';
+  }
+
+  // Show/hide nav items based on permissions
+  var navClientes  = document.querySelector('[onclick="showPage(\'clientes\')"]');
+  var navEquipos   = document.querySelector('[onclick="showPage(\'equipos\')"]');
+  var navTecnicos  = document.querySelector('[onclick="showPage(\'tecnicos\')"]');
+  var navReportes  = document.querySelector('[onclick="showPage(\'reportes\')"]');
+  var navHistorial = document.querySelector('[onclick="showPage(\'historial\')"]');
+  var navDocs      = document.querySelector('[onclick="showPage(\'documentos\')"]');
+
+  function showNav(el, show) { if (el) el.style.display = show ? '' : 'none'; }
+
+  if (isAdmin()) {
+    showNav(navClientes,  true);
+    showNav(navEquipos,   true);
+    showNav(navTecnicos,  true);
+    showNav(navReportes,  true);
+    showNav(navHistorial, true);
+    showNav(navDocs,      true);
+    var navUsuario = document.querySelector('[onclick="showPage(\'usuario\')"]');
+    showNav(navUsuario, true);
+  } else {
+    var p = currentSession.permisos || {};
+    showNav(navClientes,  !!p['ver-clientes']);
+    showNav(navEquipos,   !!p['ver-clientes']);
+    // Hide create buttons for Junior/Senior
+    setTimeout(function() {
+      var canCreate = (currentSession && currentSession.nivel === 'Jefe');
+      document.querySelectorAll('[onclick*="checkCreateCliente"], [onclick*="checkCreateEquipo"], [onclick*="checkCreateCita"]').forEach(function(btn) {
+        btn.style.display = canCreate ? '' : 'none';
+      });
+    }, 100);
+    showNav(navTecnicos,  false);
+    showNav(navReportes,  !!p['ver-reportes']);
+    showNav(navHistorial, !!p['ver-ots']);
+    showNav(navDocs,      true);
+  }
+}
+
+
+
+// ══════════ SUPABASE CLOUD SYNC ══════════
+const SUPA_URL = 'https://muitwtswgqkdcqdmqbpz.supabase.co';
+const SUPA_KEY = 'sb_publishable_ibWMMSP2sYi7zgHdxGBW6g_vZjuTiJ7';
+var supa = null;
+var cloudEnabled = false;
+var syncStatus = 'offline'; // 'offline' | 'syncing' | 'ok' | 'error'
+
+function initSupabase() {
+  return new Promise(function(resolve) {
+    try {
+      supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+      cloudEnabled = true;
+      setSyncStatus('syncing');
+      syncAll().then(resolve).catch(function(){ resolve(); });
+    } catch(e) {
+      console.warn('Supabase init failed:', e);
+      cloudEnabled = false;
+      resolve();
+    }
+  });
+}
+
+function setSyncStatus(st) {
+  syncStatus = st;
+  var el = document.getElementById('sync-indicator');
+  if (!el) return;
+  if (st === 'ok')      { el.innerHTML = '<span style="color:#4ade80">&#9679;</span> Nube'; el.title='Sincronizado'; }
+  if (st === 'syncing') { el.innerHTML = '<span style="color:#fbbf24">&#9679;</span> Sync...'; }
+  if (st === 'error')   { el.innerHTML = '<span style="color:#f87171">&#9679;</span> Sin nube'; el.title='Modo offline'; }
+  if (st === 'offline') { el.innerHTML = '<span style="color:#9ca3af">&#9679;</span> Local'; }
+}
+
+// ── Generic helpers ──
+async function supaFetch(table, data, method, id) {
+  if (!cloudEnabled || !supa) return null;
+  setSyncStatus('syncing');
+  try {
+    var res;
+    if (method === 'upsert') {
+      res = await supa.from(table).upsert(data, {onConflict:'id'});
+    } else if (method === 'delete') {
+      res = await supa.from(table).delete().eq('id', id);
+    } else if (method === 'select') {
+      res = await supa.from(table).select('*');
+    }
+    if (res && res.error) { console.warn(table, res.error); setSyncStatus('error'); return null; }
+    setSyncStatus('ok');
+    return res ? res.data : null;
+  } catch(e) {
+    setSyncStatus('error');
+    return null;
+  }
+}
+
+// ── MAP local <-> supabase ──
+function clienteToSupa(c) {
+  return { id:c.id, nombre:c.nombre, ruc:c.ruc||null, tel:c.tel||null,
+           email:c.email||null, direccion:c.direccion||null, notas:c.notas||null };
+}
+function supaToCliente(r) {
+  return { id:r.id, nombre:r.nombre, ruc:r.ruc||'', tel:r.tel||'',
+           email:r.email||'', direccion:r.direccion||'', notas:r.notas||'' };
+}
+function equipoToSupa(e) {
+  return { id:e.id, cliente_id:e.clienteId||null, tipo:e.tipo||null,
+           marca:e.marca||null, modelo:e.modelo||null, serie:e.serie||null,
+           anio:e.anio||null, horometro:e.horometro||null, notas:e.notas||null };
+}
+function supaToEquipo(r) {
+  return { id:r.id, clienteId:r.cliente_id||'', tipo:r.tipo||'',
+           marca:r.marca||'', modelo:r.modelo||'', serie:r.serie||'',
+           anio:r.anio||'', horometro:r.horometro||'', notas:r.notas||'' };
+}
+function tecnicoToSupa(t) {
+  return { id:t.id, nombre:t.nombre, tel:t.tel||null, especialidad:t.especialidad||null,
+           nivel:t.nivel||null, color:t.color||null, pin:t.pin||null,
+           permisos:t.permisos||null, notas:t.notas||null };
+}
+function supaToTecnico(r) {
+  return { id:r.id, nombre:r.nombre, tel:r.tel||'', especialidad:r.especialidad||'',
+           nivel:r.nivel||'Junior', color:r.color||'#3498db', pin:r.pin||null,
+           permisos:r.permisos||{}, notas:r.notas||'' };
+}
+function otToSupa(o) {
+  return { id:o.id, cliente_id:o.clienteId||null, equipo_id:o.equipoId||null,
+           tecnico:o.tecnico||null, descripcion:o.descripcion||null,
+           tipo_trabajo:o.tipo||o.tipoTrabajo||null, estado:o.estado||'Pendiente',
+           fecha_ing:o.fechaIng||null, fecha_ent:o.fechaEnt||null,
+           mo:parseFloat(o.mo)||0, rep_cost:parseFloat(o.repCost)||0,
+           obs:o.obs||null, fotos:o.fotos||[],
+           diagnostico:o.diagnostico||null, trabajos:o.trabajos||null,
+           repuestos:o.repuestos||null };
+}
+function supaToOT(r) {
+  return { id:r.id, clienteId:r.cliente_id||'', equipoId:r.equipo_id||'',
+           tecnico:r.tecnico||'', descripcion:r.descripcion||'',
+           tipo:r.tipo_trabajo||'', tipoTrabajo:r.tipo_trabajo||'',
+           estado:r.estado||'Pendiente',
+           fechaIng:r.fecha_ing||'', fechaEnt:r.fecha_ent||'',
+           mo:r.mo||0, repCost:r.rep_cost||0, obs:r.obs||'', fotos:r.fotos||[],
+           diagnostico:'', trabajos:'', repuestos:'' };
+}
+function citaToSupa(c) {
+  return { id:c.id, cliente_id:c.clienteId||null, equipo_id:c.equipoId||null,
+           fecha:c.fecha||null, hora:c.hora||null, motivo:c.motivo||null, notas:c.notas||null };
+}
+function supaToCita(r) {
+  return { id:r.id, clienteId:r.cliente_id||'', equipoId:r.equipo_id||'',
+           fecha:r.fecha||'', hora:r.hora||'', motivo:r.motivo||'', notas:r.notas||'' };
+}
+
+// ── SYNC ALL: pull from cloud → override local ──
+async function syncAll() {
+  if (!cloudEnabled) return;
+  setSyncStatus('syncing');
+  try {
+    var [rc, re, rt, ro, rci] = await Promise.all([
+      supa.from('clientes').select('*'),
+      supa.from('equipos').select('*'),
+      supa.from('tecnicos').select('*'),
+      supa.from('ots').select('*'),
+      supa.from('citas').select('*'),
+    ]);
+    if (rc.data)  DB.clientes = rc.data.length  > 0 ? rc.data.map(supaToCliente)  : DB.clientes;
+    if (re.data)  DB.equipos  = re.data.length  > 0 ? re.data.map(supaToEquipo)   : DB.equipos;
+    if (rt.data)  DB.tecnicos = rt.data.length  > 0 ? rt.data.map(supaToTecnico)  : DB.tecnicos;
+    if (ro.data)  DB.ots      = ro.data.length  > 0 ? ro.data.map(supaToOT)       : DB.ots;
+    if (rci.data) DB.citas    = rci.data.length > 0 ? rci.data.map(supaToCita)    : DB.citas;
+    DB.save();
+    renderDashboard();
+    renderTecnicos();
+    renderClientes();
+    renderEquipos();
+    renderOTs();
+    buildUserList(); // rebuild login list with synced tecnicos
+    setSyncStatus('ok');
+    toast('☁️ Datos sincronizados desde la nube');
+  } catch(e) {
+    setSyncStatus('error');
+  }
+}
+
+// ── PUSH single record ──
+async function cloudSave(table, mapper, obj) {
+  if (!cloudEnabled) return;
+  await supaFetch(table, mapper(obj), 'upsert');
+}
+async function cloudDelete(table, id) {
+  if (!cloudEnabled) return;
+  await supaFetch(table, null, 'delete', id);
+}
+
+// ── Wrap existing save functions to also push to cloud ──
+var _origSaveCliente = DB.saveCliente;
+
+// ── Cloud push wrappers (called after local saves) ──
+function cloudPushCliente(c)  { cloudSave('clientes', clienteToSupa, c); }
+function cloudPushEquipo(e)   { cloudSave('equipos',  equipoToSupa,  e); }
+function cloudPushTecnico(t)  { cloudSave('tecnicos', tecnicoToSupa, t); }
+function cloudPushOT(o)       { cloudSave('ots',      otToSupa,      o); }
+function cloudPushCita(ci)    { cloudSave('citas',    citaToSupa,    ci); }
+function cloudDelCliente(id)  { cloudDelete('clientes', id); }
+function cloudDelEquipo(id)   { cloudDelete('equipos',  id); }
+function cloudDelTecnico(id)  { cloudDelete('tecnicos', id); }
+function cloudDelOT(id)       { cloudDelete('ots',      id); }
+function cloudDelCita(id)     { cloudDelete('citas',    id); }
+
+
+// ══════════ MÓDULO USUARIO ══════════
+function renderUsuarioPage() {
+  var el = document.getElementById('usuario-content');
+  if (!el) return;
+
+  if (isAdmin()) {
+    renderUsuarioAdmin(el);
+  } else {
+    renderUsuarioTecnico(el);
+  }
+}
+
+function renderUsuarioAdmin(el) {
+  var html = '';
+
+  // Profile card
+  html += '<div class="usr-section">';
+  html += '<div style="text-align:center;padding:10px 0 20px">';
+  html += '<div class="usr-avatar-big" style="background:var(--amber)">AD</div>';
+  html += '<div style="font-size:20px;font-weight:800;color:var(--ink)">Administrador</div>';
+  html += '<div style="font-size:12px;color:var(--muted);margin-top:4px">Dueño del taller — Acceso total</div>';
+  html += '<span style="background:#fef3e2;color:#b7770d;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;display:inline-block;margin-top:8px">👑 ADMIN</span>';
+  html += '</div></div>';
+
+  // Change PIN
+  html += '<div class="usr-section">';
+  html += '<div class="usr-section-title">🔐 Cambiar PIN de Administrador</div>';
+  html += '<div class="form-group"><label>PIN actual</label>';
+  html += '<input type="password" id="usr-pin-actual" maxlength="4" inputmode="numeric" placeholder="••••" style="letter-spacing:6px;font-size:20px;text-align:center"></div>';
+  html += '<div class="form-group"><label>Nuevo PIN (4 dígitos)</label>';
+  html += '<input type="password" id="usr-pin-nuevo" maxlength="4" inputmode="numeric" placeholder="••••" style="letter-spacing:6px;font-size:20px;text-align:center"></div>';
+  html += '<div class="form-group"><label>Confirmar nuevo PIN</label>';
+  html += '<input type="password" id="usr-pin-confirm" maxlength="4" inputmode="numeric" placeholder="••••" style="letter-spacing:6px;font-size:20px;text-align:center"></div>';
+  html += '<button class="btn btn-primary" style="width:100%" onclick="usrCambiarPinAdmin()">💾 Guardar nuevo PIN</button>';
+  html += '</div>';
+
+  // Recovery email
+  html += '<div class="usr-section">';
+  html += '<div class="usr-section-title">📧 Correo de Recuperación</div>';
+  html += '<div class="form-group"><label>Correo electrónico</label>';
+  html += '<input type="email" id="usr-email" placeholder="admin@taller.com" value="' + (ADMIN_EMAIL||'') + '"></div>';
+  html += '<div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:10px;font-size:11px;color:#856404;margin-bottom:12px">';
+  html += 'ℹ️ Este correo aparece en la pantalla de recuperación de PIN para los técnicos que olviden su clave.</div>';
+  html += '<button class="btn btn-primary" style="width:100%;background:var(--sky)" onclick="usrGuardarEmail()">💾 Guardar correo</button>';
+  html += '</div>';
+
+  // Taller config
+  html += '<div class="usr-section">';
+  html += '<div class="usr-section-title">🏭 Datos del Taller</div>';
+  html += '<div class="form-group"><label>Nombre del taller</label>';
+  html += '<input type="text" id="usr-taller-nombre" value="' + (localStorage.getItem('taller_nombre')||'SERVIMAQ B&S Diesel') + '"></div>';
+  html += '<div class="form-group"><label>Teléfono</label>';
+  html += '<input type="text" id="usr-taller-tel" value="' + (localStorage.getItem('taller_tel')||'+51 968 733 257') + '"></div>';
+  html += '<button class="btn btn-primary" style="width:100%;background:var(--go)" onclick="usrGuardarTaller()">💾 Guardar datos del taller</button>';
+  html += '</div>';
+
+  // Danger zone
+  html += '<div class="usr-section" style="border:1px solid #fecaca">';
+  html += '<div class="usr-section-title" style="color:#e74c3c">⚠️ Zona de Administración</div>';
+  html += '<button class="btn" style="width:100%;background:#e74c3c;color:white;margin-bottom:8px" onclick="syncAll()">☁️ Sincronizar con Supabase</button>';
+  html += '<button class="btn btn-ghost" style="width:100%" onclick="cerrarSesion()">🚪 Cerrar sesión</button>';
+  html += '</div>';
+
+  el.innerHTML = html;
+}
+
+function renderUsuarioTecnico(el) {
+  var t = currentSession;
+  if (!t) return;
+  var ini = t.nombre.split(' ').map(function(w){return w[0];}).join('').substring(0,2).toUpperCase();
+  var nivel = t.nivel || 'Junior';
+  var nivelColor = nivel==='Jefe'?'#b7770d':nivel==='Senior'?'#0c5460':'#6a1b9a';
+  var nivelBg    = nivel==='Jefe'?'#fef3e2':nivel==='Senior'?'#d1ecf1':'#f3e5f5';
+  var p = t.permisos || {};
+  var html = '';
+
+  // Profile
+  html += '<div class="usr-section">';
+  html += '<div style="text-align:center;padding:10px 0 20px">';
+  html += '<div class="usr-avatar-big" style="background:' + (t.color||'#3498db') + '">' + ini + '</div>';
+  html += '<div style="font-size:20px;font-weight:800;color:var(--ink)">' + t.nombre + '</div>';
+  html += '<div style="font-size:12px;color:var(--muted);margin-top:4px">' + (t.especialidad||'Técnico') + '</div>';
+  html += '<span style="background:' + nivelBg + ';color:' + nivelColor + ';font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;display:inline-block;margin-top:8px">' + nivel + '</span>';
+  html += '</div>';
+  html += '<div class="usr-field"><span class="usr-field-label">📱 WhatsApp</span><span class="usr-field-value">' + (t.tel||'—') + '</span></div>';
+  html += '<div class="usr-field"><span class="usr-field-label">🔧 Especialidad</span><span class="usr-field-value">' + (t.especialidad||'—') + '</span></div>';
+  html += '</div>';
+
+  // Change own PIN
+  html += '<div class="usr-section">';
+  html += '<div class="usr-section-title">🔐 Cambiar mi PIN</div>';
+  html += '<div class="form-group"><label>PIN actual</label>';
+  html += '<input type="password" id="tec-pin-actual" maxlength="4" inputmode="numeric" placeholder="••••" style="letter-spacing:6px;font-size:20px;text-align:center"></div>';
+  html += '<div class="form-group"><label>Nuevo PIN</label>';
+  html += '<input type="password" id="tec-pin-nuevo" maxlength="4" inputmode="numeric" placeholder="••••" style="letter-spacing:6px;font-size:20px;text-align:center"></div>';
+  html += '<div class="form-group"><label>Confirmar PIN</label>';
+  html += '<input type="password" id="tec-pin-confirm" maxlength="4" inputmode="numeric" placeholder="••••" style="letter-spacing:6px;font-size:20px;text-align:center"></div>';
+  html += '<button class="btn btn-primary" style="width:100%" onclick="usrCambiarPinTecnico()">💾 Guardar nuevo PIN</button>';
+  html += '</div>';
+
+  // Permissions (read only)
+  html += '<div class="usr-section">';
+  html += '<div class="usr-section-title">🔑 Mis permisos</div>';
+  function permRow(label, val) {
+    return '<div class="usr-field"><span class="usr-field-label">' + label + '</span>' +
+      '<span style="font-size:16px">' + (val ? '✅' : '❌') + '</span></div>';
+  }
+  html += permRow('Ver mis OTs',           !!p['ver-ots']);
+  html += permRow('Crear OTs',             !!p['crear-ots']);
+  html += permRow('Editar/Eliminar OTs',   !!p['editar-ots']);
+  html += permRow('Ver clientes/equipos',  !!p['ver-clientes']);
+  html += permRow('Ver reportes',          !!p['ver-reportes']);
+  html += '<div style="margin-top:10px;font-size:11px;color:var(--muted)">Para cambiar permisos contacta al administrador.</div>';
+  html += '</div>';
+
+  // Actions
+  html += '<div class="usr-section">';
+  html += '<div class="usr-section-title">⚡ Acciones</div>';
+  html += '<button class="btn btn-ghost" style="width:100%;margin-bottom:8px" onclick="cambiarUsuario()">🔄 Cambiar usuario</button>';
+  html += '<button class="btn btn-ghost" style="width:100%" onclick="cerrarSesion()">🚪 Cerrar sesión</button>';
+  html += '</div>';
+
+  el.innerHTML = html;
+}
+
+function usrCambiarPinAdmin() {
+  var actual   = document.getElementById('usr-pin-actual').value.trim();
+  var nuevo    = document.getElementById('usr-pin-nuevo').value.trim();
+  var confirm2 = document.getElementById('usr-pin-confirm').value.trim();
+  if (actual !== ADMIN_PIN) { toast('PIN actual incorrecto', 'error'); return; }
+  if (!/^\d{4}$/.test(nuevo)) { toast('El nuevo PIN debe ser 4 dígitos', 'error'); return; }
+  if (nuevo !== confirm2) { toast('Los PINs no coinciden', 'error'); return; }
+  ADMIN_PIN = nuevo;
+  localStorage.setItem('admin_pin', nuevo);
+  toast('✅ PIN actualizado correctamente');
+  document.getElementById('usr-pin-actual').value = '';
+  document.getElementById('usr-pin-nuevo').value  = '';
+  document.getElementById('usr-pin-confirm').value = '';
+}
+
+function usrGuardarEmail() {
+  var email = document.getElementById('usr-email').value.trim();
+  if (email && !/^[^@]+@[^@]+\.[^@]+$/.test(email)) { toast('Correo inválido', 'error'); return; }
+  ADMIN_EMAIL = email;
+  localStorage.setItem('admin_email', email);
+  toast('✅ Correo guardado');
+}
+
+function usrGuardarTaller() {
+  var nombre = document.getElementById('usr-taller-nombre').value.trim();
+  var tel    = document.getElementById('usr-taller-tel').value.trim();
+  if (nombre) localStorage.setItem('taller_nombre', nombre);
+  if (tel)    localStorage.setItem('taller_tel', tel);
+  toast('✅ Datos del taller guardados');
+}
+
+function usrCambiarPinTecnico() {
+  var actual   = document.getElementById('tec-pin-actual').value.trim();
+  var nuevo    = document.getElementById('tec-pin-nuevo').value.trim();
+  var confirm2 = document.getElementById('tec-pin-confirm').value.trim();
+  var t = currentSession;
+  if (!t) return;
+  if (actual !== t.pin) { toast('PIN actual incorrecto', 'error'); return; }
+  if (!/^\d{4}$/.test(nuevo)) { toast('El nuevo PIN debe ser 4 dígitos', 'error'); return; }
+  if (nuevo !== confirm2) { toast('Los PINs no coinciden', 'error'); return; }
+  t.pin = nuevo;
+  var idx = DB.tecnicos.findIndex(function(x){ return x.id === t.id; });
+  if (idx > -1) DB.tecnicos[idx].pin = nuevo;
+  saveTecnicoData();
+  cloudPushTecnico(t);
+  toast('✅ PIN actualizado correctamente');
+  document.getElementById('tec-pin-actual').value  = '';
+  document.getElementById('tec-pin-nuevo').value   = '';
+  document.getElementById('tec-pin-confirm').value = '';
+}
+
+// ══════════ LOCK OT FIELDS FOR TÉCNICOS ══════════
+function applyOTFieldLocks() {
+  var lockedFields = ['ot-cliente','ot-equipo','ot-tipo','ot-tecnico-sel',
+                      'ot-fecha-ing','ot-fecha-ent','ot-descripcion'];
+  var editingId = document.getElementById('ot-edit-id') ? document.getElementById('ot-edit-id').value : '';
+
+  if (!isAdmin() && editingId) {
+    // Tecnico editing existing OT — lock header fields, allow work fields
+    lockedFields.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) {
+        el.disabled = true;
+        if (el.parentElement) el.parentElement.classList.add('lock-overlay');
+      }
+    });
+    // Also lock mo, rep-cost, estado only for non-jefe
+    if (currentSession.nivel !== 'Jefe') {
+      var moEl = document.getElementById('ot-mo');
+      var repEl = document.getElementById('ot-rep-cost');
+      if (moEl)  moEl.disabled  = true;
+      if (repEl) repEl.disabled = true;
+    }
+  } else {
+    // Admin or new OT — unlock all
+    lockedFields.concat(['ot-mo','ot-rep-cost']).forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) {
+        el.disabled = false;
+        if (el.parentElement) el.parentElement.classList.remove('lock-overlay');
+      }
+    });
+  }
+}
+
+
+// ── Permission: can create clients/equipment ──
+function canCreateClienteEquipo() {
+  if (isAdmin()) return true;
+  if (!currentSession) return false;
+  var nivel = currentSession.nivel || 'Junior';
+  return nivel === 'Jefe';
+}
+
+function checkCreateCliente() {
+  if (!canCreateClienteEquipo()) {
+    toast('Solo el Jefe de Taller o Admin pueden crear clientes', 'error');
+    return false;
+  }
+  openModal('modal-cliente');
+}
+
+function checkCreateEquipo() {
+  if (!canCreateClienteEquipo()) {
+    toast('Solo el Jefe de Taller o Admin pueden crear equipos', 'error');
+    return false;
+  }
+  openModal('modal-equipo');
+}
+
+
+function checkCreateCita() {
+  if (!canCreateClienteEquipo()) {
+    toast('Solo el Jefe de Taller o Admin pueden crear citas', 'error');
+    return;
+  }
+  openModal('modal-cita');
+}
+
+function exportarDatos() {
+  const datos = {
+    version: 2,
+    fecha: new Date().toISOString(),
+    clientes: DB.clientes,
+    equipos: DB.equipos,
+    ots: DB.ots,
+    citas: DB.citas || [],
+    tecnicos: DB.tecnicos || [],
+    tecnicos: DB.tecnicos || []
+  };
+  const blob = new Blob([JSON.stringify(datos, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const fecha = new Date().toLocaleDateString('es-PE').replace(/\//g,'-');
+  a.href     = url;
+  a.download = `SERVIMAQ_backup_${fecha}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('✅ Datos exportados correctamente');
+}
+
+function importarDatos(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const datos = JSON.parse(e.target.result);
+      if (!datos.clientes || !datos.equipos || !datos.ots)
+        return toast('Archivo inválido', 'error');
+      if (!confirm(`¿Restaurar datos?\nSe cargarán ${datos.clientes.length} clientes, ${datos.equipos.length} equipos y ${datos.ots.length} OTs.\n\nEsto reemplazará los datos actuales.`)) return;
+      DB.clientes = datos.clientes;
+      DB.equipos  = datos.equipos;
+      DB.ots      = datos.ots;
+      DB.citas    = datos.citas || [];
+      DB.tecnicos = datos.tecnicos || [];
+      saveTecnicoData();
+      DB.tecnicos = datos.tecnicos || [];
+      DB.save();
+      renderDashboard();
+      renderClientes();
+      renderEquipos();
+      renderOTs();
+      toast('✅ Datos restaurados correctamente');
+      // Push all restored data to Supabase
+      if (cloudEnabled) {
+        setSyncStatus('syncing');
+        DB.clientes.forEach(function(c){ cloudPushCliente(c); });
+        DB.equipos.forEach(function(e){ cloudPushEquipo(e); });
+        DB.tecnicos.forEach(function(t){ cloudPushTecnico(t); });
+        DB.ots.forEach(function(o){ cloudPushOT(o); });
+        DB.citas.forEach(function(ci){ cloudPushCita(ci); });
+        setTimeout(function(){ setSyncStatus('ok'); }, 2000);
+        toast('☁️ Subiendo datos a la nube...');
+      }
+    } catch(err) {
+      toast('Error al leer el archivo', 'error');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+
+// INIT
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('topbarDate').textContent =
+    new Date().toLocaleDateString('es-PE', { weekday:'long', day:'2-digit', month:'long', year:'numeric' });
+  document.getElementById('ot-fecha-ing').value = new Date().toISOString().split('T')[0];
+  renderDashboard();
+  // Show login screen on start
+  initSupabase().then(function(){
+    showLoginScreen();
+  }).catch(function(){
+    showLoginScreen();
+  });
+});
+</script>
+
+<!-- MODAL ADMIN CONFIG -->
+<div class="modal-overlay" id="modal-admin-config">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <div class="modal-title">⚙️ Configuración de Administrador</div>
+      <button class="modal-close" onclick="closeModal('modal-admin-config')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Cambiar PIN -->
+      <div style="margin-bottom:20px">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px">🔐 Cambiar PIN de Administrador</div>
+        <div class="form-group">
+          <label>PIN actual</label>
+          <input type="password" id="admin-pin-actual" maxlength="4" inputmode="numeric"
+            placeholder="••••" style="letter-spacing:6px;font-size:18px;text-align:center">
+        </div>
+        <div class="form-group">
+          <label>Nuevo PIN (4 dígitos)</label>
+          <input type="password" id="admin-pin-nuevo" maxlength="4" inputmode="numeric"
+            placeholder="••••" style="letter-spacing:6px;font-size:18px;text-align:center">
+        </div>
+        <div class="form-group">
+          <label>Confirmar nuevo PIN</label>
+          <input type="password" id="admin-pin-confirm" maxlength="4" inputmode="numeric"
+            placeholder="••••" style="letter-spacing:6px;font-size:18px;text-align:center">
+        </div>
+        <button class="btn btn-primary" style="width:100%" onclick="cambiarPinAdmin()">💾 Guardar nuevo PIN</button>
+      </div>
+
+      <div style="border-top:2px solid var(--border);padding-top:18px;margin-top:4px">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px">📧 Correo para recuperación de clave</div>
+        <div class="form-group">
+          <label>Correo electrónico del administrador</label>
+          <input type="email" id="admin-email-input" placeholder="admin@taller.com">
+        </div>
+        <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:10px 12px;font-size:12px;color:#856404;margin-bottom:12px">
+          ℹ️ Este correo se muestra en pantalla de recuperación para que puedas contactarte contigo mismo. <strong>Los técnicos no tienen opción de recuperación — deben llamar al administrador.</strong>
+        </div>
+        <button class="btn btn-primary" style="width:100%;background:var(--sky)" onclick="guardarEmailAdmin()">💾 Guardar correo</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL RECUPERAR CLAVE (técnicos) -->
+<div class="modal-overlay" id="modal-recuperar">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-header">
+      <div class="modal-title">🔑 ¿Olvidaste tu PIN?</div>
+      <button class="modal-close" onclick="closeModal('modal-recuperar')">✕</button>
+    </div>
+    <div class="modal-body" style="text-align:center">
+      <div style="font-size:48px;margin-bottom:12px">📞</div>
+      <div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:8px">Contacta al Administrador</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px">
+        Solo el administrador puede restablecer tu PIN.<br>
+        Comunícate directamente con él para recuperar tu acceso.
+      </div>
+      <div id="recuperar-admin-info" style="background:var(--mist);border-radius:10px;padding:14px;display:none">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px">Contacto del Administrador</div>
+        <div id="recuperar-email-txt" style="font-size:14px;font-weight:700;color:var(--ink)"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" style="width:100%" onclick="closeModal('modal-recuperar')">Entendido</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL MENÚ USUARIO -->
+<div class="modal-overlay" id="modal-user-menu" onclick="if(event.target===this)closeModal('modal-user-menu')">
+  <div class="modal" style="max-width:320px">
+    <div class="modal-body" style="padding:0;overflow:hidden;border-radius:12px">
+
+      <!-- Header con avatar -->
+      <div style="background:var(--ink);padding:20px;text-align:center">
+        <div id="umenu-avatar" style="width:56px;height:56px;border-radius:50%;background:var(--amber);
+          display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;
+          color:white;margin:0 auto 10px"></div>
+        <div id="umenu-name" style="font-size:16px;font-weight:800;color:white"></div>
+        <div id="umenu-role" style="font-size:12px;color:var(--amber);margin-top:3px"></div>
+      </div>
+
+      <!-- Opciones -->
+      <div style="padding:8px 0">
+        <!-- Solo admin ve configuración -->
+        <div id="umenu-admin-opts" style="display:none">
+          <div onclick="closeModal('modal-user-menu');openAdminConfig()"
+            style="display:flex;align-items:center;gap:12px;padding:14px 20px;cursor:pointer;transition:background 0.15s"
+            onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background=''">
+            <span style="font-size:20px">⚙️</span>
+            <div>
+              <div style="font-weight:600;font-size:14px">Configuración</div>
+              <div style="font-size:11px;color:var(--muted)">Cambiar PIN y correo</div>
+            </div>
+          </div>
+          <div onclick="closeModal('modal-user-menu');syncAll()"
+            style="display:flex;align-items:center;gap:12px;padding:14px 20px;cursor:pointer;transition:background 0.15s"
+            onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background=''">
+            <span style="font-size:20px">☁️</span>
+            <div>
+              <div style="font-weight:600;font-size:14px">Sincronizar ahora</div>
+              <div style="font-size:11px;color:var(--muted)">Descargar datos de la nube</div>
+            </div>
+          </div>
+          <div style="height:1px;background:var(--border);margin:4px 0"></div>
+        </div>
+
+        <!-- Cambiar usuario -->
+        <div onclick="closeModal('modal-user-menu');cambiarUsuario()"
+          style="display:flex;align-items:center;gap:12px;padding:14px 20px;cursor:pointer;transition:background 0.15s"
+          onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background=''">
+          <span style="font-size:20px">🔄</span>
+          <div>
+            <div style="font-weight:600;font-size:14px">Cambiar usuario</div>
+            <div style="font-size:11px;color:var(--muted)">Ingresar como otro técnico</div>
+          </div>
+        </div>
+
+        <!-- Cerrar sesión -->
+        <div onclick="closeModal('modal-user-menu');cerrarSesion()"
+          style="display:flex;align-items:center;gap:12px;padding:14px 20px;cursor:pointer;transition:background 0.15s"
+          onmouseover="this.style.background='#fff5f5'" onmouseout="this.style.background=''">
+          <span style="font-size:20px">🚪</span>
+          <div>
+            <div style="font-weight:600;font-size:14px;color:#e74c3c">Cerrar sesión</div>
+            <div style="font-size:11px;color:var(--muted)">Volver a la pantalla de login</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// PWA install prompt
+var deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  deferredPrompt = e;
+  var btn = document.getElementById('btn-install-pwa');
+  if (btn) btn.style.display = 'flex';
+});
+window.addEventListener('appinstalled', function() {
+  deferredPrompt = null;
+  var btn = document.getElementById('btn-install-pwa');
+  if (btn) btn.style.display = 'none';
+  toast('✅ App instalada en tu pantalla de inicio');
+});
+function installPWA() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(function(){ deferredPrompt = null; });
+  } else {
+    toast('Abre en Chrome y usa "Añadir a pantalla de inicio"');
+  }
+}
+</script>
+</body>
+</html>
