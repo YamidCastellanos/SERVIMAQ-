@@ -2869,7 +2869,7 @@ function setSyncStatus(st) {
 
 // ── Generic helpers ──
 async function supaFetch(table, data, method, id) {
-  if (!cloudEnabled || !supa) return null;
+  if (!cloudEnabled || !supa) { console.warn('Cloud disabled'); return null; }
   setSyncStatus('syncing');
   try {
     var res;
@@ -2880,10 +2880,16 @@ async function supaFetch(table, data, method, id) {
     } else if (method === 'select') {
       res = await supa.from(table).select('*');
     }
-    if (res && res.error) { console.warn(table, res.error); setSyncStatus('error'); return null; }
+    if (res && res.error) {
+      console.error('SUPA ERROR [' + table + ']:', JSON.stringify(res.error));
+      toast('⚠️ Error nube: ' + res.error.message, 'error');
+      setSyncStatus('error');
+      return null;
+    }
     setSyncStatus('ok');
     return res ? res.data : null;
   } catch(e) {
+    console.error('SUPA EXCEPTION:', e.message);
     setSyncStatus('error');
     return null;
   }
