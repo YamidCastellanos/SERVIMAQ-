@@ -2882,7 +2882,9 @@ async function supaFetch(table, data, method, id) {
     }
     if (res && res.error) {
       console.error('SUPA ERROR [' + table + ']:', JSON.stringify(res.error));
-      toast('⚠️ Error nube: ' + res.error.message, 'error');
+      var errEl = document.getElementById('supa-error-msg');
+      if (errEl) errEl.textContent = '[' + table + '] ' + res.error.message + ' (code: ' + res.error.code + ')';
+      openModal('modal-supa-error');
       setSyncStatus('error');
       return null;
     }
@@ -3495,5 +3497,29 @@ function installPWA() {
   }
 }
 </script>
+
+<!-- MODAL ERROR SUPABASE -->
+<div class="modal-overlay" id="modal-supa-error" onclick="if(event.target===this)closeModal('modal-supa-error')">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-header" style="background:#e74c3c">
+      <div class="modal-title" style="color:white">⚠️ Error de sincronización</div>
+      <button class="modal-close" style="color:white" onclick="closeModal('modal-supa-error')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:13px;color:var(--dark);margin-bottom:12px">
+        Hubo un problema al guardar en la nube. Detalle del error:
+      </div>
+      <div id="supa-error-msg" style="background:#fff3cd;border:1px solid #ffc107;
+        border-radius:8px;padding:12px;font-size:12px;color:#856404;
+        word-break:break-all;font-family:monospace"></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:10px">
+        Los datos se guardaron localmente. Toca ☁️ para reintentar cuando tengas conexión.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" style="width:100%" onclick="closeModal('modal-supa-error')">Entendido</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
