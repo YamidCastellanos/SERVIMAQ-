@@ -1178,6 +1178,7 @@ let otCounter = DB.ots.length > 0 ? Math.max(...DB.ots.map(o => parseInt(o.id.sp
 // NAVIGATION
 
 function showPage(name) {
+  refreshAllSelects();
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
@@ -1194,12 +1195,14 @@ function showPage(name) {
   if (name === 'reportes') renderReportes();
   if (name === 'tecnicos') { syncAll().then(function(){ renderTecnicos(); }); }
   if (name === 'calendario') { populateClienteSelects(); renderCalendario(); }
+  if (name === 'historial') { populateClienteSelects(); }
 }
 
 
 // MODAL
 
 function openModal(id) {
+  refreshAllSelects();
   if (id === 'modal-ot') {
     var editField = document.getElementById('ot-edit-id');
     // Only lock if actually editing (editField has a value set by editOT)
@@ -1320,7 +1323,7 @@ function deleteCliente(id) {
 // EQUIPOS
 
 function populateClienteSelects() {
-  ['e-cliente', 'ot-cliente'].forEach(sid => {
+  ['e-cliente', 'ot-cliente', 'cita-cliente'].forEach(sid => {
     const sel = document.getElementById(sid);
     if (!sel) return;
     const cur = sel.value;
@@ -1447,7 +1450,7 @@ function saveOT() {
     DB.ots.unshift({ id, fechaCreacion: new Date().toISOString(), ...getOTForm(), fotos: [...fotosTemp] });
   }
   fotosTemp = [];
-  DB.save(); closeModal('modal-ot'); renderOTs(); renderDashboard();
+  DB.save(); closeModal('modal-ot'); renderOTs(); renderDashboard(); refreshAllSelects();
   toast('✅ OT guardada');
   var _otId = document.getElementById('ot-edit-id').value || (DB.ots[0] ? DB.ots[0].id : null);
   var _savedOT2 = _otId ? DB.ots.find(function(x){ return x.id === _otId; }) : null;
@@ -2297,7 +2300,7 @@ function saveTecnico() {
   saveTecnicoData();
   closeModal('modal-tecnico');
   renderTecnicos();
-  populateTecnicoSelects();
+  refreshAllSelects();
   document.getElementById('tec-edit-id').value = '';
   toast('Técnico guardado');
   var _savedId = document.getElementById('tec-edit-id').value || DB.tecnicos[DB.tecnicos.length-1].id;
@@ -3022,7 +3025,7 @@ async function syncAll() {
     renderClientes();
     renderEquipos();
     renderOTs();
-    buildUserList(); // rebuild login list with synced tecnicos
+    refreshAllSelects();
     setSyncStatus('ok');
     toast('☁️ Datos sincronizados desde la nube');
   } catch(e) {
@@ -3359,6 +3362,46 @@ async function syncAndPush() {
   }
 }
 
+
+// ── Master select refresh — run after any data change ──
+function refreshAllSelects() {
+  // ── Clientes ──
+  var clienteIds = ['e-cliente', 'ot-cliente', 'cita-cliente'];
+  clienteIds.forEach(function(sid) {
+    var sel = document.getElementById(sid);
+    if (!sel) return;
+    var cur = sel.value;
+    sel.innerHTML = '<option value="">— Selecciona cliente —</option>';
+    DB.clientes.forEach(function(c) {
+      var opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = c.id + ' — ' + c.nombre;
+      sel.appendChild(opt);
+    });
+    if (cur) sel.value = cur;
+  });
+
+  // ── Técnicos ──
+  var tecSel = document.getElementById('ot-tecnico-sel');
+  if (tecSel) {
+    var curTec = tecSel.value;
+    tecSel.innerHTML = '<option value="">— Selecciona técnico —</option>';
+    DB.tecnicos.forEach(function(t) {
+      var opt = document.createElement('option');
+      opt.value = t.id;
+      opt.textContent = t.nombre + ' (' + (t.especialidad||'') + ')';
+      tecSel.appendChild(opt);
+    });
+    if (curTec) tecSel.value = curTec;
+  }
+
+  // ── OTs para documentos ──
+  renderDocSelects();
+
+  // ── Login users ──
+  buildUserList();
+}
+
 function exportarDatos() {
   const datos = {
     version: 2,
@@ -3429,6 +3472,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('topbarDate').textContent =
     new Date().toLocaleDateString('es-PE', { weekday:'long', day:'2-digit', month:'long', year:'numeric' });
   document.getElementById('ot-fecha-ing').value = new Date().toISOString().split('T')[0];
+  refreshAllSelects();
   renderDashboard();
   // Show login screen on start
   initSupabase().then(function(){
